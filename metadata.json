@@ -1,0 +1,5 @@
+{
+  "name": "School Curriculum Preview",
+  "description": "A simple dashboard to preview the book curriculum for different classes, structured into Core subjects, Variations, and Add-ons.",
+  "requestFramePermissions": []
+}
