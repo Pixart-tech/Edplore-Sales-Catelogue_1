@@ -10,8 +10,8 @@ interface BookItemProps {
 
 const BookItem: React.FC<BookItemProps> = ({ book }) => {
   const handleOpen = useCallback(() => {
-    openPdf(book.pdfUrl);
-  }, [book.pdfUrl]);
+    openPdf(book.pdfUrl, book.pdfAsset);
+  }, [book.pdfUrl, book.pdfAsset]);
 
   return (
     <View style={styles.container}>
