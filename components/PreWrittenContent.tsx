@@ -1,4 +1,5 @@
 import React from 'react';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { PreWrittenClass } from '../types';
 import { getSubjectAppearance } from '../utils/subjectIcons';
 import { EyeIcon } from './icons/EyeIcon';
@@ -9,50 +10,131 @@ interface PreWrittenContentProps {
 
 const PreWrittenContent: React.FC<PreWrittenContentProps> = ({ data }) => {
   return (
-    <div className="space-y-6">
+    <View style={styles.container}>
       {data.map((classData) => (
-        <div key={classData.className} className="bg-white rounded-xl shadow-md overflow-hidden transition-shadow hover:shadow-lg">
-          <div className="p-4 bg-gray-50 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-indigo-700">{classData.className}</h2>
-          </div>
-          <div className="p-4 md:p-6 space-y-3">
+        <View key={classData.className} style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>{classData.className}</Text>
+          </View>
+          <View style={styles.cardBody}>
             {classData.subjects.map((subject) => {
-              // This view assumes each pre-written subject has exactly one book.
               if (subject.books.length === 0) {
                 return null;
               }
+
               const book = subject.books[0];
-              const { icon, bg } = getSubjectAppearance(subject.subjectName);
+              const { Icon, backgroundColor, iconColor } = getSubjectAppearance(subject.subjectName);
+
+              const handleOpen = () => {
+                void Linking.openURL(book.pdfUrl);
+              };
 
               return (
-                <div 
-                  key={subject.subjectName} 
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors duration-200"
-                >
-                  <div className="flex items-center">
-                    <div className={`flex-shrink-0 h-10 w-10 ${bg} rounded-full flex items-center justify-center`}>
-                      {icon}
-                    </div>
-                    <h3 className="ml-4 text-md font-semibold text-gray-800">{subject.subjectName}</h3>
-                  </div>
-                  <a
-                    href={book.pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
-                    aria-label={`View PDF for ${subject.subjectName}`}
+                <View key={subject.subjectName} style={styles.row}>
+                  <View style={styles.rowContent}>
+                    <View style={[styles.iconWrapper, { backgroundColor }]}>
+                      <Icon size={20} color={iconColor} />
+                    </View>
+                    <Text style={styles.subjectName}>{subject.subjectName}</Text>
+                  </View>
+                  <Pressable
+                    onPress={handleOpen}
+                    style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+                    accessibilityRole="link"
+                    accessibilityLabel={`View PDF for ${subject.subjectName}`}
                   >
-                    <EyeIcon className="h-5 w-5 sm:mr-1.5" />
-                    <span className="hidden sm:inline">View</span>
-                  </a>
-                </div>
+                    <EyeIcon size={18} color="#ffffff" />
+                    <Text style={styles.buttonLabel}>View</Text>
+                  </Pressable>
+                </View>
               );
             })}
-          </div>
-        </div>
+          </View>
+        </View>
       ))}
-    </div>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    gap: 20,
+  },
+  card: {
+    borderRadius: 18,
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 12,
+    elevation: 3,
+    overflow: 'hidden',
+  },
+  cardHeader: {
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#e2e8f0',
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#4c1d95',
+  },
+  cardBody: {
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#f8fafc',
+    gap: 12,
+  },
+  rowContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  iconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  subjectName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 9999,
+    backgroundColor: '#4338ca',
+  },
+  buttonPressed: {
+    opacity: 0.85,
+  },
+  buttonLabel: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+});
 
 export default PreWrittenContent;

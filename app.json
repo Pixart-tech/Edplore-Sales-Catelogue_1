@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Edplore Sales Catalogue",
+    "slug": "edplore-sales-catalogue",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "jsEngine": "hermes",
+    "platforms": ["ios", "android", "web"],
+    "assetBundlePatterns": ["**/*"],
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    }
+  }
+}

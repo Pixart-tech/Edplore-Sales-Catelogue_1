@@ -1,21 +1,21 @@
 import React from 'react';
+import Svg, { Path } from 'react-native-svg';
+import type { IconProps } from './types';
 
-export const CoreIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width="20" 
-    height="20" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
+export const CoreIcon: React.FC<IconProps> = ({ size = 20, color = '#0284c7', ...props }) => (
+  <Svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={2}
+    strokeLinecap="round"
     strokeLinejoin="round"
-    className="text-sky-600"
     {...props}
   >
-    <path d="M12 2L2 7l10 5 10-5-10-5z" />
-    <path d="M2 17l10 5 10-5" />
-    <path d="M2 12l10 5 10-5" />
-  </svg>
+    <Path d="M12 2L2 7l10 5 10-5-10-5z" />
+    <Path d="M2 17l10 5 10-5" />
+    <Path d="M2 12l10 5 10-5" />
+  </Svg>
 );

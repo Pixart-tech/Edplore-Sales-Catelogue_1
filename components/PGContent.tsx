@@ -1,4 +1,5 @@
 import React from 'react';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { PGSubject } from '../types';
 import { getSubjectAppearance } from '../utils/subjectIcons';
 import { EyeIcon } from './icons/EyeIcon';
@@ -9,44 +10,107 @@ interface PGContentProps {
 
 const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
   return (
-    <div className="bg-white rounded-xl shadow p-4 md:p-6">
-      <div className="space-y-3">
+    <View style={styles.container}>
+      <View style={styles.list}>
         {subjects.map((subject) => {
-          // This view assumes each PG subject has exactly one book.
-          // If there are no books, we don't render the row.
           if (subject.books.length === 0) {
             return null;
           }
+
           const book = subject.books[0];
-          const { icon, bg } = getSubjectAppearance(subject.name);
+          const { Icon, backgroundColor, iconColor } = getSubjectAppearance(subject.name);
+
+          const handleOpen = () => {
+            void Linking.openURL(book.pdfUrl);
+          };
 
           return (
-            <div 
-              key={subject.name} 
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors duration-200"
-            >
-              <div className="flex items-center">
-                <div className={`flex-shrink-0 h-10 w-10 ${bg} rounded-full flex items-center justify-center`}>
-                  {icon}
-                </div>
-                <h2 className="ml-4 text-md font-semibold text-gray-800">{subject.name}</h2>
-              </div>
-              <a
-                href={book.pdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
-                aria-label={`View PDF for ${subject.name}`}
+            <View key={subject.name} style={styles.row}>
+              <View style={styles.rowContent}>
+                <View style={[styles.iconWrapper, { backgroundColor }]}>
+                  <Icon size={20} color={iconColor} />
+                </View>
+                <Text style={styles.subjectName}>{subject.name}</Text>
+              </View>
+              <Pressable
+                onPress={handleOpen}
+                style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+                accessibilityRole="link"
+                accessibilityLabel={`View PDF for ${subject.name}`}
               >
-                <EyeIcon className="h-5 w-5 sm:mr-1.5" />
-                <span className="hidden sm:inline">View</span>
-              </a>
-            </div>
+                <EyeIcon size={18} color="#ffffff" />
+                <Text style={styles.buttonLabel}>View</Text>
+              </Pressable>
+            </View>
           );
         })}
-      </div>
-    </div>
+      </View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  list: {
+    gap: 12,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+    gap: 12,
+  },
+  rowContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  iconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  subjectName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 9999,
+    backgroundColor: '#4338ca',
+  },
+  buttonPressed: {
+    opacity: 0.85,
+  },
+  buttonLabel: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+});
 
 export default PGContent;
