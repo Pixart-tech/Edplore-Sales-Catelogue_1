@@ -7,7 +7,7 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Pre-writing Strokes',
-          pdfUrl: require('./assets/PG/English.pdf'),
+          pdfUrl: '',
           pdfAsset: require('./assets/PG/English.pdf'),
         },
       ],
@@ -17,7 +17,7 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Pre-math Concepts',
-          pdfUrl: require('./assets/PG/Maths.pdf'),
+          pdfUrl: '',
           pdfAsset: require('./assets/PG/Maths.pdf'),
         },
       ],
@@ -27,7 +27,7 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Myself & My Surroundings',
-          pdfUrl: require('./assets/PG/EVS.pdf'),
+          pdfUrl: '',
           pdfAsset: require('./assets/PG/EVS.pdf'),
         },
       ],
@@ -37,7 +37,7 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Colouring & Craft Activities',
-          pdfUrl: require('./assets/PG/Art & craft.pdf'),
+          pdfUrl: '',
           pdfAsset: require('./assets/PG/Art & craft.pdf'),
         },
       ],
@@ -47,7 +47,7 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Pattern Writing Book',
-          pdfUrl: require('./assets/PG/Pattern.pdf'),
+          pdfUrl: '',
           pdfAsset: require('./assets/PG/Pattern.pdf'),
         },
       ],
@@ -57,7 +57,7 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Collection of Rhymes & Stories',
-          pdfUrl: require('./assets/PG/Rhymes & Stories.pdf'),
+          pdfUrl: '',
           pdfAsset: require('./assets/PG/Rhymes & Stories.pdf'),
         },
       ],
