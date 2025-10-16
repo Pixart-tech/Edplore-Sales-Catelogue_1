@@ -1,6 +1,7 @@
 export interface Book {
   name: string;
   pdfUrl: string;
+  pdfAsset?: number;
 }
 
 export interface StandardSubject {
