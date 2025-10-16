@@ -1,7 +1,6 @@
 import { Linking, Platform } from 'react-native';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
-import * as IntentLauncher from 'expo-intent-launcher';
 
 const hasScheme = (url: string) => /^[a-z][a-z0-9+\-.]*:/i.test(url);
 const hasFileOrContentScheme = (url: string) => {
@@ -93,27 +92,6 @@ const isOpenableUri = (uri: string) =>
   !!uri &&
   (hasScheme(uri) || hasFileOrContentScheme(uri) || uri.startsWith('/') || uri.startsWith('data:'));
 
-const ensureAndroidOpenableUri = async (uri: string) => {
-  if (!uri) {
-    return '';
-  }
-
-  if (!uri.startsWith('file://')) {
-    return uri;
-  }
-
-  try {
-    const contentUri = await FileSystem.getContentUriAsync(uri);
-    if (contentUri) {
-      return contentUri;
-    }
-  } catch (error) {
-    console.warn('Failed to convert file URI to content URI', error);
-  }
-
-  return uri;
-};
-
 export const openPdf = async (pdfUrl?: string | number, pdfAsset?: number) => {
   const sanitizedUrl = sanitizePdfUrl(pdfUrl);
 
@@ -127,17 +105,6 @@ export const openPdf = async (pdfUrl?: string | number, pdfAsset?: number) => {
   }
 
   try {
-    if (Platform.OS === 'android' && hasFileOrContentScheme(targetUri)) {
-      const androidUri = await ensureAndroidOpenableUri(targetUri);
-
-      await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
-        data: androidUri,
-        flags: 1,
-        type: 'application/pdf',
-      });
-      return;
-    }
-
     await Linking.openURL(targetUri);
   } catch (error) {
     console.error(`Failed to open PDF at ${targetUri}`, error);
