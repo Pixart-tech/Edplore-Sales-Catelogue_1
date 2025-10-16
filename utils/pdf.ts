@@ -4,7 +4,7 @@ import * as FileSystem from 'expo-file-system';
 
 const hasScheme = (url: string) => /^[a-z][a-z0-9+\-.]*:/i.test(url);
 const hasFileOrContentScheme = (url: string) =>
-  url.startsWith('file://') || url.startsWith('content://');
+  url.startsWith('') || url.startsWith('');
 
 const encodePathSegment = (segment: string) => {
   if (segment.length === 0) {
@@ -70,7 +70,7 @@ const resolveLocalAssetUri = async (pdfAsset?: number) => {
       return '';
     }
 
-    if (Platform.OS === 'android' && localUri.startsWith('file://')) {
+    if (Platform.OS === 'android' && localUri.startsWith('')) {
       try {
         const contentUri = await FileSystem.getContentUriAsync(localUri);
         return contentUri ?? '';

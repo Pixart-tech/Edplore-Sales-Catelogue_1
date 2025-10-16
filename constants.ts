@@ -7,8 +7,8 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Pre-writing Strokes',
-          pdfUrl: '.PG/English.pdf',
-          pdfAsset: require('./PG/English.pdf'),
+          pdfUrl: require('./assets/PG/English.pdf'),
+          pdfAsset: require('./assets/PG/English.pdf'),
         },
       ],
     },
@@ -17,8 +17,8 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Pre-math Concepts',
-          pdfUrl: '.PG/Maths.pdf',
-          pdfAsset: require('./PG/Maths.pdf'),
+          pdfUrl: require('./assets/PG/Maths.pdf'),
+          pdfAsset: require('./assets/PG/Maths.pdf'),
         },
       ],
     },
@@ -27,8 +27,8 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Myself & My Surroundings',
-          pdfUrl: '.PG/EVS.pdf',
-          pdfAsset: require('./PG/EVS.pdf'),
+          pdfUrl: require('./assets/PG/EVS.pdf'),
+          pdfAsset: require('./assets/PG/EVS.pdf'),
         },
       ],
     },
@@ -37,8 +37,8 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Colouring & Craft Activities',
-          pdfUrl: '.PG/Art & craft.pdf',
-          pdfAsset: require('./PG/Art & craft.pdf'),
+          pdfUrl: require('./assets/PG/Art & craft.pdf'),
+          pdfAsset: require('./assets/PG/Art & craft.pdf'),
         },
       ],
     },
@@ -47,8 +47,8 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Pattern Writing Book',
-          pdfUrl: '.PG/Pattern.pdf',
-          pdfAsset: require('./PG/Pattern.pdf'),
+          pdfUrl: require('./assets/PG/Pattern.pdf'),
+          pdfAsset: require('./assets/PG/Pattern.pdf'),
         },
       ],
     },
@@ -57,8 +57,8 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Collection of Rhymes & Stories',
-          pdfUrl: '.PG/Rhymes & Stories.pdf',
-          pdfAsset: require('./PG/Rhymes & Stories.pdf'),
+          pdfUrl: require('./assets/PG/Rhymes & Stories.pdf'),
+          pdfAsset: require('./assets/PG/Rhymes & Stories.pdf'),
         },
       ],
     },
