@@ -5,11 +5,20 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "jsEngine": "hermes",
-    "platforms": ["ios", "android", "web"],
-    "assetBundlePatterns": ["**/*"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "web": {
       "bundler": "metro",
       "output": "static"
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
