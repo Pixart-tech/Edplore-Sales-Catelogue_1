@@ -2,6 +2,10 @@ import { Platform } from 'react-native';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
 
+const BASE64_ENCODING = (
+  FileSystem.EncodingType?.Base64 ?? 'base64'
+) as FileSystem.EncodingType;
+
 const hasScheme = (url: string) => /^[a-z][a-z0-9+\-.]*:/i.test(url);
 const hasFileOrContentScheme = (url: string) => {
   const lowerUrl = url.toLowerCase();
@@ -296,7 +300,7 @@ const loadRemotePdfAsHtml = async (uri: string) => {
     }
 
     const base64 = await FileSystem.readAsStringAsync(filePath, {
-      encoding: FileSystem.EncodingType.Base64,
+      encoding: BASE64_ENCODING,
     });
 
     if (shouldCleanUp) {
@@ -353,7 +357,7 @@ export const createPdfViewerSource = async (
 
     try {
       const base64 = await FileSystem.readAsStringAsync(filePath, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: BASE64_ENCODING,
       });
       return { type: 'html', html: createInlinePdfHtml(base64) };
     } catch (error) {
