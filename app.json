@@ -19,6 +19,9 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "android": {
+      "package": "com.praphul09.edploresalescatalogue"
+    }
   }
 }
