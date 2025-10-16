@@ -1,43 +1,33 @@
-import React, { useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { PGSubject } from '../types';
 import { getSubjectAppearance } from '../utils/subjectIcons';
-import PGPdfSlider from './PGPdfSlider';
+import { EyeIcon } from './icons/EyeIcon';
 
 interface PGContentProps {
   subjects: PGSubject[];
 }
 
 const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
-  const previewableSubjects = useMemo(
-    () => subjects.filter((subject) => subject.books.length > 0 && subject.books[0]?.pdfAsset),
-    [subjects],
-  );
-
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeSubject = previewableSubjects[activeIndex];
+  const handleOpenPdf = useCallback((pdfUrl: string) => {
+    void Linking.openURL(pdfUrl);
+  }, []);
 
   return (
     <View style={styles.container}>
-      <View style={styles.sliderSection}>
-        <Text style={styles.sliderTitle}>Playgroup curriculum preview</Text>
-        <PGPdfSlider subjects={previewableSubjects} onIndexChange={setActiveIndex} />
-      </View>
-
       <View style={styles.list}>
         {subjects.map((subject) => {
           const { Icon, backgroundColor, iconColor } = getSubjectAppearance(subject.name);
           const book = subject.books[0];
-          const isActive = activeSubject?.name === subject.name;
 
           return (
             <View
               key={subject.name}
-              style={[styles.row, isActive && styles.rowActive]}
+              style={styles.row}
               accessibilityLabel={`${subject.name} curriculum details`}
             >
               <View style={styles.rowContent}>
-                <View style={[styles.iconWrapper, { backgroundColor }]}> 
+                <View style={[styles.iconWrapper, { backgroundColor }]}>
                   <Icon size={20} color={iconColor} />
                 </View>
                 <View style={styles.rowText}>
@@ -46,7 +36,15 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
                 </View>
               </View>
               {book?.pdfUrl ? (
-                <Text style={styles.pdfHint}>Swipe to view PDF</Text>
+                <Pressable
+                  onPress={() => handleOpenPdf(book.pdfUrl)}
+                  style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+                  accessibilityRole="link"
+                  accessibilityLabel={`View PDF for ${subject.name}`}
+                >
+                  <EyeIcon size={16} color="#ffffff" />
+                  <Text style={styles.buttonLabel}>View</Text>
+                </Pressable>
               ) : (
                 <Text style={styles.pdfUnavailable}>PDF unavailable</Text>
               )}
@@ -62,22 +60,6 @@ const styles = StyleSheet.create({
   container: {
     gap: 20,
   },
-  sliderSection: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 10,
-    elevation: 2,
-    gap: 12,
-  },
-  sliderTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1f2937',
-  },
   list: {
     gap: 12,
   },
@@ -92,10 +74,6 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
     backgroundColor: '#f8fafc',
     gap: 12,
-  },
-  rowActive: {
-    borderColor: '#6366f1',
-    backgroundColor: '#eef2ff',
   },
   rowContent: {
     flexDirection: 'row',
@@ -123,10 +101,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#475569',
   },
-  pdfHint: {
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 9999,
+    backgroundColor: '#4338ca',
+  },
+  buttonPressed: {
+    opacity: 0.85,
+  },
+  buttonLabel: {
+    color: '#ffffff',
     fontSize: 11,
-    fontWeight: '600',
-    color: '#4338ca',
+    fontWeight: '700',
     textTransform: 'uppercase',
   },
   pdfUnavailable: {
