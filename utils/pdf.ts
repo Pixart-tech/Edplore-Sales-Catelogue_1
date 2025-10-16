@@ -84,11 +84,7 @@ const resolveLocalAssetUri = async (pdfAsset?: number) => {
     const remoteUri = encodeUri(asset.uri);
 
     if (Platform.OS === 'android') {
-      if (remoteUri) {
-        return remoteUri;
-      }
-
-      return localUri;
+      return localUri || remoteUri;
     }
 
     return localUri || remoteUri;
