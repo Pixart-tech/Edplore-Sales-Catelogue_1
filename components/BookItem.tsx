@@ -1,7 +1,8 @@
 import React, { useCallback } from 'react';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Book } from '../types';
 import { EyeIcon } from './icons/EyeIcon';
+import { openPdf } from '../utils/pdf';
 
 interface BookItemProps {
   book: Book;
@@ -9,7 +10,7 @@ interface BookItemProps {
 
 const BookItem: React.FC<BookItemProps> = ({ book }) => {
   const handleOpen = useCallback(() => {
-    void Linking.openURL(book.pdfUrl);
+    openPdf(book.pdfUrl);
   }, [book.pdfUrl]);
 
   return (
