@@ -4,27 +4,27 @@ export const CURRICULUM_DATA: Curriculum = {
   PG: [
     {
       name: 'English',
-      books: [{ name: 'Pre-writing Strokes', pdfUrl: '#' }],
+      books: [{ name: 'Pre-writing Strokes', pdfUrl: '.PG/English.pdf' }],
     },
     {
       name: 'Maths',
-      books: [{ name: 'Pre-math Concepts', pdfUrl: '#' }],
+      books: [{ name: 'Pre-math Concepts', pdfUrl: '.PG/Maths.pdf' }],
     },
     {
       name: 'EVS',
-      books: [{ name: 'Myself & My Surroundings', pdfUrl: '#' }],
+      books: [{ name: 'Myself & My Surroundings', pdfUrl: '.PG/EVS.pdf' }],
     },
     {
       name: 'Art & Craft',
-      books: [{ name: 'Colouring & Craft Activities', pdfUrl: '#' }],
+      books: [{ name: 'Colouring & Craft Activities', pdfUrl: '.PG/Art & craft.pdf' }],
     },
     {
       name: 'Pattern',
-      books: [{ name: 'Pattern Writing Book', pdfUrl: '#' }],
+      books: [{ name: 'Pattern Writing Book', pdfUrl: '.PG/Pattern.pdf' }],
     },
     {
       name: 'Rhymes & Stories',
-      books: [{ name: 'Collection of Rhymes & Stories', pdfUrl: '#' }],
+      books: [{ name: 'Collection of Rhymes & Stories', pdfUrl: '.PG/Rhymes & Stories.pdf' }],
     },
   ],
   Nursery: [
