@@ -1,6 +1,5 @@
 import { Linking, Platform } from 'react-native';
 import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
 
 const hasScheme = (url: string) => /^[a-z][a-z0-9+\-.]*:/i.test(url);
 const hasFileOrContentScheme = (url: string) => {
@@ -58,6 +57,19 @@ export const sanitizePdfUrl = (pdfUrl?: string | number) => {
   return `${encodedPath}${suffix}`;
 };
 
+const encodeUri = (uri?: string | null) => {
+  if (!uri) {
+    return '';
+  }
+
+  try {
+    return encodeURI(uri);
+  } catch (error) {
+    console.warn('Failed to encode URI', uri, error);
+    return uri;
+  }
+};
+
 const resolveLocalAssetUri = async (pdfAsset?: number) => {
   if (typeof pdfAsset !== 'number') {
     return '';
@@ -67,21 +79,18 @@ const resolveLocalAssetUri = async (pdfAsset?: number) => {
     const asset = Asset.fromModule(pdfAsset);
     await asset.downloadAsync();
 
-    const localUri = asset.localUri ?? asset.uri;
-    if (!localUri) {
-      return '';
-    }
+    const localUri = encodeUri(asset.localUri);
+    const remoteUri = encodeUri(asset.uri);
 
-    if (Platform.OS === 'android' && localUri.startsWith('file://')) {
-      try {
-        const contentUri = await FileSystem.getContentUriAsync(localUri);
-        return contentUri ?? '';
-      } catch (error) {
-        console.warn('Failed to create content URI for asset', error);
+    if (Platform.OS === 'android') {
+      if (remoteUri) {
+        return remoteUri;
       }
+
+      return localUri;
     }
 
-    return localUri;
+    return localUri || remoteUri;
   } catch (error) {
     console.warn('Failed to resolve local PDF asset', error);
     return '';
