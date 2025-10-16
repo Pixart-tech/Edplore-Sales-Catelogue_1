@@ -4,6 +4,7 @@ import React, {
   useContext,
   useMemo,
   useState,
+  useEffect,
 } from 'react';
 import {
   ActivityIndicator,
@@ -15,7 +16,10 @@ import {
   View,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
+import * as FileSystem from 'expo-file-system';
 import { createPdfViewerSource, PdfViewerSource } from '../utils/pdf';
+import { Asset } from 'expo-asset';
+
 
 type PdfOpenParams = {
   pdfUrl?: string | number;
@@ -28,7 +32,9 @@ type PdfViewerContextValue = {
   closePdf: () => void;
 };
 
-const PdfViewerContext = createContext<PdfViewerContextValue | undefined>(undefined);
+const PdfViewerContext = createContext<PdfViewerContextValue | undefined>(
+  undefined
+);
 
 interface PdfViewerState {
   visible: boolean;
@@ -46,56 +52,64 @@ const initialState: PdfViewerState = {
   source: null,
 };
 
-export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [state, setState] = useState<PdfViewerState>(initialState);
 
   const closePdf = useCallback(() => {
     setState(initialState);
   }, []);
 
-  const openPdf = useCallback(async ({ pdfUrl, pdfAsset, title }: PdfOpenParams) => {
-    setState({
-      visible: true,
-      title: title ?? 'Preview',
-      loading: true,
-      error: null,
-      source: null,
-    });
+  const openPdf = useCallback(
+    async ({ pdfUrl, pdfAsset, title }: PdfOpenParams) => {
+      setState({
+        visible: true,
+        title: title ?? 'Preview',
+        loading: true,
+        error: null,
+        source: null,
+      });
 
-    try {
-      const source = await createPdfViewerSource(pdfUrl, pdfAsset);
+      try {
+        const source = await createPdfViewerSource(pdfUrl, pdfAsset);
 
-      if (!source) {
+        if (!source) {
+          setState({
+            visible: true,
+            title: title ?? 'Preview',
+            loading: false,
+            error: 'PDF is not available for preview.',
+            source: null,
+          });
+          return;
+        }
+
         setState({
           visible: true,
           title: title ?? 'Preview',
           loading: false,
-          error: 'PDF is not available for preview.',
+          error: null,
+          source,
+        });
+      } catch (error) {
+        console.error('Failed to open PDF inline', error);
+        setState({
+          visible: true,
+          title: title ?? 'Preview',
+          loading: false,
+          error: 'Unable to load PDF. Please try again later.',
           source: null,
         });
-        return;
       }
+    },
+    []
+  );
 
-      setState({
-        visible: true,
-        title: title ?? 'Preview',
-        loading: false,
-        error: null,
-        source,
-      });
-    } catch (error) {
-      console.error('Failed to open PDF inline', error);
-      setState({
-        visible: true,
-        title: title ?? 'Preview',
-        loading: false,
-        error: 'Unable to load PDF. Please try again later.',
-        source: null,
-      });
-    }
-  }, []);
-
-  const contextValue = useMemo(() => ({ openPdf, closePdf }), [openPdf, closePdf]);
+  const contextValue = useMemo(
+    () => ({ openPdf, closePdf }),
+    [openPdf, closePdf]
+  );
 
   const renderContent = () => {
     if (state.loading) {
@@ -115,19 +129,38 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       );
     }
 
-    if (!state.source) {
-      return null;
-    }
+    if (!state.source) return null;
 
     if (state.source.type === 'html') {
-      return <WebView originWhitelist={['*']} source={{ html: state.source.html }} style={styles.webView} />;
+      return (
+        <WebView
+          originWhitelist={['*']}
+          source={{ html: state.source.html }}
+          style={styles.webView}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+          startInLoadingState={true}
+          renderLoading={() => (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#4338ca" />
+              <Text style={styles.loadingText}>Rendering PDF...</Text>
+            </View>
+          )}
+        />
+      );
     }
 
+    // For URI type (remote URLs or data URIs)
     return (
       <WebView
+        originWhitelist={['*']}
         source={{ uri: state.source.uri }}
         style={styles.webView}
         startInLoadingState
+        allowFileAccess={true}
+        allowFileAccessFromFileURLs={true}
+        allowUniversalAccessFromFileURLs={true}
+        mixedContentMode="always"
         renderLoading={() => (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#4338ca" />
@@ -146,7 +179,9 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         animationType="slide"
         transparent={Platform.OS === 'ios'}
         onRequestClose={closePdf}
-        presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}
+        presentationStyle={
+          Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'
+        }
       >
         <View style={styles.overlay}>
           <View style={styles.modalContent}>
@@ -156,7 +191,10 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                 onPress={closePdf}
                 accessibilityRole="button"
                 accessibilityLabel="Close PDF preview"
-                style={({ pressed }) => [styles.closeButton, pressed && styles.closeButtonPressed]}
+                style={({ pressed }) => [
+                  styles.closeButton,
+                  pressed && styles.closeButtonPressed,
+                ]}
               >
                 <Text style={styles.closeButtonLabel}>Close</Text>
               </Pressable>
@@ -171,11 +209,9 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
 export const usePdfViewer = () => {
   const context = useContext(PdfViewerContext);
-
   if (!context) {
     throw new Error('usePdfViewer must be used within a PdfViewerProvider');
   }
-
   return context;
 };
 
@@ -230,6 +266,7 @@ const styles = StyleSheet.create({
   },
   webView: {
     flex: 1,
+    backgroundColor: '#111827',
   },
   loadingContainer: {
     flex: 1,
