@@ -155,6 +155,67 @@ const isFileLikeUri = (uri: string) => uri.startsWith('file:') || uri.startsWith
 
 const isDataUri = (uri: string) => uri.startsWith('data:application/pdf');
 
+const getPdfCacheDirectory = async () => {
+  const baseDirectory = FileSystem.cacheDirectory ?? FileSystem.documentDirectory;
+
+  if (!baseDirectory) {
+    return null;
+  }
+
+  const directory = `${baseDirectory}pdf-viewer/`;
+
+  try {
+    await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+
+    if (!message.toLowerCase().includes('already exists')) {
+      console.warn('Failed to ensure PDF cache directory', error);
+      return null;
+    }
+  }
+
+  return directory;
+};
+
+const hashRemoteUri = (uri: string) => {
+  let hash = 0;
+
+  for (let index = 0; index < uri.length; index += 1) {
+    hash = (hash * 31 + uri.charCodeAt(index)) >>> 0;
+  }
+
+  return hash.toString(16);
+};
+
+const loadRemotePdfAsHtml = async (uri: string) => {
+  const cacheDirectory = await getPdfCacheDirectory();
+
+  if (!cacheDirectory) {
+    return null;
+  }
+
+  const fileName = `remote-${hashRemoteUri(uri)}.pdf`;
+  const filePath = `${cacheDirectory}${fileName}`;
+
+  try {
+    const fileInfo = await FileSystem.getInfoAsync(filePath);
+
+    if (!fileInfo.exists) {
+      await FileSystem.downloadAsync(uri, filePath);
+    }
+
+    const base64 = await FileSystem.readAsStringAsync(filePath, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    return createInlinePdfHtml(base64);
+  } catch (error) {
+    console.warn('Failed to download remote PDF for inline preview', error);
+    return null;
+  }
+};
+
 export const createPdfViewerSource = async (
   pdfUrl?: string | number,
   pdfAsset?: number,
@@ -170,9 +231,13 @@ export const createPdfViewerSource = async (
   }
 
   if (isRemoteUri(resolvedUri)) {
-    const encodedRemote = encodeURIComponent(resolvedUri);
-    const viewerUri = `https://docs.google.com/gview?embedded=1&url=${encodedRemote}`;
-    return { type: 'uri', uri: viewerUri };
+    const inlineHtml = await loadRemotePdfAsHtml(resolvedUri);
+
+    if (inlineHtml) {
+      return { type: 'html', html: inlineHtml };
+    }
+
+    return { type: 'uri', uri: resolvedUri };
   }
 
   if (isFileLikeUri(resolvedUri) || resolvedUri.startsWith('content:')) {

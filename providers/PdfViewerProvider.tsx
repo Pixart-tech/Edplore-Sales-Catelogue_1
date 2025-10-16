@@ -144,7 +144,7 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       <Modal
         visible={state.visible}
         animationType="slide"
-        transparent
+        transparent={Platform.OS === 'ios'}
         onRequestClose={closePdf}
         presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}
       >
