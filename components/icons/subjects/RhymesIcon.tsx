@@ -1,18 +1,21 @@
 import React from 'react';
+import Svg, { Circle, Path } from 'react-native-svg';
+import type { IconProps } from '../types';
 
-export const RhymesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
+export const RhymesIcon: React.FC<IconProps> = ({ size = 20, color = '#7c3aed', ...props }) => (
+  <Svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round"
     {...props}
   >
-    <path d="M9 18V5l12-2v13"></path>
-    <circle cx="6" cy="18" r="3"></circle>
-    <circle cx="18" cy="16" r="3"></circle>
-  </svg>
+    <Path d="M9 18V5l12-2v13" />
+    <Circle cx={6} cy={18} r={3} />
+    <Circle cx={18} cy={16} r={3} />
+  </Svg>
 );

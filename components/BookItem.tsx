@@ -1,27 +1,71 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Book } from '../types';
 import { EyeIcon } from './icons/EyeIcon';
 
 interface BookItemProps {
-    book: Book;
+  book: Book;
 }
 
 const BookItem: React.FC<BookItemProps> = ({ book }) => {
-    return (
-        <div className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-gray-200">
-            <p className="text-gray-700 text-sm font-medium pr-2">{book.name}</p>
-            <a
-                href={book.pdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-shrink-0 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
-                aria-label={`View PDF for ${book.name}`}
-            >
-                <EyeIcon className="h-4 w-4 sm:mr-1.5" />
-                <span className="hidden sm:inline">View</span>
-            </a>
-        </div>
-    );
+  const handleOpen = useCallback(() => {
+    void Linking.openURL(book.pdfUrl);
+  }, [book.pdfUrl]);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>{book.name}</Text>
+      <Pressable
+        onPress={handleOpen}
+        style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+        accessibilityRole="link"
+        accessibilityLabel={`View PDF for ${book.name}`}
+      >
+        <EyeIcon size={18} color="#ffffff" />
+        <Text style={styles.buttonLabel}>View</Text>
+      </Pressable>
+    </View>
+  );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    gap: 12,
+  },
+  title: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#334155',
+    paddingRight: 12,
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 9999,
+    backgroundColor: '#4338ca',
+  },
+  buttonPressed: {
+    opacity: 0.85,
+  },
+  buttonLabel: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+});
 
 export default BookItem;

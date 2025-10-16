@@ -1,19 +1,19 @@
-
 import React from 'react';
+import Svg, { Path } from 'react-native-svg';
+import type { IconProps } from './types';
 
-export const ChevronDownIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
+export const ChevronDownIcon: React.FC<IconProps> = ({ size = 24, color = '#94a3b8', ...props }) => (
+  <Svg
+    width={size}
+    height={size}
     viewBox="0 0 24 24"
     fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
+    stroke={color}
+    strokeWidth={2}
     strokeLinecap="round"
     strokeLinejoin="round"
     {...props}
   >
-    <path d="M6 9l6 6 6-6" />
-  </svg>
+    <Path d="M6 9l6 6 6-6" />
+  </Svg>
 );
