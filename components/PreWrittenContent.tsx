@@ -1,15 +1,17 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import type { PreWrittenClass } from '../types';
+import type { Book, PreWrittenClass } from '../types';
 import { getSubjectAppearance } from '../utils/subjectIcons';
 import { EyeIcon } from './icons/EyeIcon';
-import { openPdf } from '../utils/pdf';
+import { usePdfViewer } from './PdfViewerProvider';
 
 interface PreWrittenContentProps {
   data: PreWrittenClass[];
 }
 
 const PreWrittenContent: React.FC<PreWrittenContentProps> = ({ data }) => {
+  const { openPdf } = usePdfViewer();
+
   return (
     <View style={styles.container}>
       {data.map((classData) => (
@@ -27,7 +29,14 @@ const PreWrittenContent: React.FC<PreWrittenContentProps> = ({ data }) => {
               const { Icon, backgroundColor, iconColor } = getSubjectAppearance(subject.subjectName);
 
               const handleOpen = () => {
-                openPdf(book.pdfUrl);
+                const potentialAsset =
+                  typeof (book as Partial<Book>).pdfAsset === 'number'
+                    ? (book as Partial<Book>).pdfAsset
+                    : undefined;
+
+                openPdf(book.pdfUrl, potentialAsset, {
+                  title: `${subject.subjectName} • ${classData.className}`,
+                });
               };
 
               return (

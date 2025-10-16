@@ -8,6 +8,7 @@ import SubjectAccordion from './components/SubjectAccordion';
 import PreWrittenContent from './components/PreWrittenContent';
 import PGContent from './components/PGContent';
 import { BookOpenIcon } from './components/icons/BookOpenIcon';
+import { PdfViewerProvider } from './components/PdfViewerProvider';
 
 const App: React.FC = () => {
   const classNames: ClassName[] = useMemo(
@@ -46,36 +47,38 @@ const App: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="dark" />
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.titleRow}>
-            <View style={styles.logo}>
-              <BookOpenIcon size={26} color="#ffffff" />
+    <PdfViewerProvider>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style="dark" />
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <View style={styles.titleRow}>
+              <View style={styles.logo}>
+                <BookOpenIcon size={26} color="#ffffff" />
+              </View>
+              <Text style={styles.title}>Curriculum Preview</Text>
             </View>
-            <Text style={styles.title}>Curriculum Preview</Text>
+            <ClassTabs
+              classes={classNames}
+              activeClass={activeClass}
+              setActiveClass={(className) => {
+                setActiveClass(className);
+                setOpenSubjectIndex(null);
+              }}
+            />
           </View>
-          <ClassTabs
-            classes={classNames}
-            activeClass={activeClass}
-            setActiveClass={(className) => {
-              setActiveClass(className);
-              setOpenSubjectIndex(null);
-            }}
-          />
+
+          <ScrollView
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
+            {renderContent()}
+          </ScrollView>
+
+          <Text style={styles.footer}>Curriculum data for educational purposes.</Text>
         </View>
-
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-        >
-          {renderContent()}
-        </ScrollView>
-
-        <Text style={styles.footer}>Curriculum data for educational purposes.</Text>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </PdfViewerProvider>
   );
 };
 
