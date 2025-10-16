@@ -2,18 +2,16 @@ import React, { useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Book } from '../types';
 import { EyeIcon } from './icons/EyeIcon';
-import { usePdfViewer } from './PdfViewerProvider';
+import { openPdf } from '../utils/pdf';
 
 interface BookItemProps {
   book: Book;
 }
 
 const BookItem: React.FC<BookItemProps> = ({ book }) => {
-  const { openPdf } = usePdfViewer();
-
   const handleOpen = useCallback(() => {
-    openPdf(book.pdfUrl, book.pdfAsset, { title: book.name });
-  }, [book.name, book.pdfAsset, book.pdfUrl, openPdf]);
+    openPdf(book.pdfUrl, book.pdfAsset);
+  }, [book.pdfUrl, book.pdfAsset]);
 
   return (
     <View style={styles.container}>
