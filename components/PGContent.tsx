@@ -1,8 +1,9 @@
 import React, { useCallback } from 'react';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { PGSubject } from '../types';
 import { getSubjectAppearance } from '../utils/subjectIcons';
 import { EyeIcon } from './icons/EyeIcon';
+import { openPdf } from '../utils/pdf';
 
 interface PGContentProps {
   subjects: PGSubject[];
@@ -10,7 +11,7 @@ interface PGContentProps {
 
 const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
   const handleOpenPdf = useCallback((pdfUrl: string) => {
-    void Linking.openURL(pdfUrl);
+    openPdf(pdfUrl);
   }, []);
 
   return (

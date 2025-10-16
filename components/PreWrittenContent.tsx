@@ -1,8 +1,9 @@
 import React from 'react';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { PreWrittenClass } from '../types';
 import { getSubjectAppearance } from '../utils/subjectIcons';
 import { EyeIcon } from './icons/EyeIcon';
+import { openPdf } from '../utils/pdf';
 
 interface PreWrittenContentProps {
   data: PreWrittenClass[];
@@ -26,7 +27,7 @@ const PreWrittenContent: React.FC<PreWrittenContentProps> = ({ data }) => {
               const { Icon, backgroundColor, iconColor } = getSubjectAppearance(subject.subjectName);
 
               const handleOpen = () => {
-                void Linking.openURL(book.pdfUrl);
+                openPdf(book.pdfUrl);
               };
 
               return (
