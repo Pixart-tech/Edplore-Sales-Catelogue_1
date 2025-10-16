@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { CURRICULUM_DATA, PRE_WRITTEN_DATA } from './constants';
 import type { ClassName, RegularClassName } from './types';
 import ClassTabs from './components/ClassTabs';
@@ -46,36 +47,38 @@ const App: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="dark" />
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.titleRow}>
-            <View style={styles.logo}>
-              <BookOpenIcon size={26} color="#ffffff" />
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style="dark" />
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <View style={styles.titleRow}>
+              <View style={styles.logo}>
+                <BookOpenIcon size={26} color="#ffffff" />
+              </View>
+              <Text style={styles.title}>Curriculum Preview</Text>
             </View>
-            <Text style={styles.title}>Curriculum Preview</Text>
+            <ClassTabs
+              classes={classNames}
+              activeClass={activeClass}
+              setActiveClass={(className) => {
+                setActiveClass(className);
+                setOpenSubjectIndex(null);
+              }}
+            />
           </View>
-          <ClassTabs
-            classes={classNames}
-            activeClass={activeClass}
-            setActiveClass={(className) => {
-              setActiveClass(className);
-              setOpenSubjectIndex(null);
-            }}
-          />
+
+          <ScrollView
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
+            {renderContent()}
+          </ScrollView>
+
+          <Text style={styles.footer}>Curriculum data for educational purposes.</Text>
         </View>
-
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-        >
-          {renderContent()}
-        </ScrollView>
-
-        <Text style={styles.footer}>Curriculum data for educational purposes.</Text>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 
