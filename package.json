@@ -16,7 +16,6 @@
     "expo-status-bar": "~2.0.0",
     "react": "18.3.1",
     "react-native": "0.76.3",
-    "react-native-pdf-view": "^0.3.2",
     "react-native-svg": "15.11.1",
     "react-native-webview": "^13.16.0"
   },

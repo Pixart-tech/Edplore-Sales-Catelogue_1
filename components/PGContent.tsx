@@ -3,18 +3,16 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Book, PGSubject } from '../types';
 import { getSubjectAppearance } from '../utils/subjectIcons';
 import { EyeIcon } from './icons/EyeIcon';
-import { usePdfViewer } from './PdfViewerProvider';
+import { openPdf } from '../utils/pdf';
 
 interface PGContentProps {
   subjects: PGSubject[];
 }
 
 const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
-  const { openPdf } = usePdfViewer();
-
   const handleOpenPdf = useCallback((book: Book) => {
-    openPdf(book.pdfUrl, book.pdfAsset, { title: book.name });
-  }, [openPdf]);
+    openPdf(book.pdfUrl, book.pdfAsset);
+  }, []);
 
   return (
     <View style={styles.container}>
