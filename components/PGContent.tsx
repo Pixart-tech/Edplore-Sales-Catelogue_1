@@ -20,6 +20,7 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
         {subjects.map((subject) => {
           const { Icon, backgroundColor, iconColor } = getSubjectAppearance(subject.name);
           const book = subject.books[0];
+          const hasPdf = Boolean(book?.pdfUrl || book?.pdfAsset);
 
           return (
             <View
@@ -36,7 +37,7 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
                   {book?.name ? <Text style={styles.bookName}>{book.name}</Text> : null}
                 </View>
               </View>
-              {book?.pdfUrl ? (
+              {hasPdf ? (
                 <Pressable
                   onPress={() => handleOpenPdf(book)}
                   style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}

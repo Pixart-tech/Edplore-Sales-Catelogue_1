@@ -3,8 +3,10 @@ import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
 
 const hasScheme = (url: string) => /^[a-z][a-z0-9+\-.]*:/i.test(url);
-const hasFileOrContentScheme = (url: string) =>
-  url.startsWith('') || url.startsWith('');
+const hasFileOrContentScheme = (url: string) => {
+  const lowerUrl = url.toLowerCase();
+  return lowerUrl.startsWith('file:') || lowerUrl.startsWith('content:');
+};
 
 const encodePathSegment = (segment: string) => {
   if (segment.length === 0) {
@@ -29,8 +31,8 @@ const encodePathname = (path: string) =>
     .map((segment) => encodePathSegment(segment))
     .join('/');
 
-export const sanitizePdfUrl = (pdfUrl: string) => {
-  if (!pdfUrl) {
+export const sanitizePdfUrl = (pdfUrl?: string | number) => {
+  if (!pdfUrl || typeof pdfUrl !== 'string') {
     return '';
   }
 
@@ -70,7 +72,7 @@ const resolveLocalAssetUri = async (pdfAsset?: number) => {
       return '';
     }
 
-    if (Platform.OS === 'android' && localUri.startsWith('')) {
+    if (Platform.OS === 'android' && localUri.startsWith('file://')) {
       try {
         const contentUri = await FileSystem.getContentUriAsync(localUri);
         return contentUri ?? '';
@@ -87,17 +89,18 @@ const resolveLocalAssetUri = async (pdfAsset?: number) => {
 };
 
 const isOpenableUri = (uri: string) =>
-  hasScheme(uri) || hasFileOrContentScheme(uri) || uri.startsWith('/') || uri.startsWith('data:');
+  !!uri &&
+  (hasScheme(uri) || hasFileOrContentScheme(uri) || uri.startsWith('/') || uri.startsWith('data:'));
 
-export const openPdf = async (pdfUrl: string, pdfAsset?: number) => {
+export const openPdf = async (pdfUrl?: string | number, pdfAsset?: number) => {
   const sanitizedUrl = sanitizePdfUrl(pdfUrl);
 
-  const targetUri = isOpenableUri(sanitizedUrl)
+  const targetUri = sanitizedUrl && isOpenableUri(sanitizedUrl)
     ? sanitizedUrl
     : await resolveLocalAssetUri(pdfAsset);
 
   if (!targetUri) {
-    console.warn(`PDF URL is not available or invalid: "${pdfUrl}"`);
+    console.warn(`PDF URL is not available or invalid: "${String(pdfUrl ?? '')}"`);
     return;
   }
 
