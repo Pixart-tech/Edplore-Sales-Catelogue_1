@@ -118,32 +118,123 @@ export const resolvePdfUri = async (pdfUrl?: string | number, pdfAsset?: number)
   return '';
 };
 
-const createInlinePdfHtml = (base64Content: string) =>
-  [
+const PDF_JS_VERSION = '4.5.136';
+
+const createInlinePdfHtml = (base64Content: string) => {
+  const sanitizedBase64 = base64Content.replace(/\s/g, '');
+
+  return [
     '<!DOCTYPE html>',
     '<html>',
     '  <head>',
     '    <meta charset="utf-8" />',
     '    <meta name="viewport" content="width=device-width, initial-scale=1" />',
     '    <style>',
+    '      * {',
+    '        box-sizing: border-box;',
+    '      }',
     '      html, body {',
     '        margin: 0;',
     '        padding: 0;',
     '        height: 100%;',
-    '        background-color: #111827;',
+    '        background-color: #0f172a;',
+    '        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;',
     '      }',
-    '      iframe {',
-    '        border: none;',
+    '      #viewer {',
     '        width: 100%;',
-    '        height: 100%;',
+    '        min-height: 100%;',
+    '        padding: 20px 12px 40px;',
+    '        display: flex;',
+    '        flex-direction: column;',
+    '        gap: 20px;',
+    '        align-items: center;',
+    '      }',
+    '      canvas {',
+    '        width: 100% !important;',
+    '        height: auto !important;',
+    '        max-width: 860px;',
+    '        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.35);',
+    '        border-radius: 12px;',
+    '        background-color: #ffffff;',
+    '      }',
+    '      #loading, #error {',
+    '        color: #e2e8f0;',
+    '        text-align: center;',
+    '        padding: 24px;',
+    '        font-size: 16px;',
+    '        font-weight: 600;',
+    '      }',
+    '      #error {',
+    '        display: none;',
+    '        color: #f97316;',
     '      }',
     '    </style>',
+    `    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDF_JS_VERSION}/pdf.min.js"></script>`,
     '  </head>',
     '  <body>',
-    '    <iframe src="data:application/pdf;base64,${base64Content}" title="PDF preview"></iframe>',
+    '    <div id="loading">Preparing PDF preview…</div>',
+    '    <div id="error">Unable to display this PDF.</div>',
+    '    <div id="viewer" class="pdfViewer"></div>',
+    '    <script>',
+    '      (function () {',
+    `        var workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDF_JS_VERSION}/pdf.worker.min.js';`,
+    `        var base64 = '${sanitizedBase64}';`,
+    '        try {',
+    '          var binary = atob(base64);',
+    '          var length = binary.length;',
+    '          var bytes = new Uint8Array(length);',
+    '          for (var i = 0; i < length; i += 1) {',
+    '            bytes[i] = binary.charCodeAt(i);',
+    '          }',
+    '          if (window.pdfjsLib) {',
+    '            window.pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;',
+    '            var loadingTask = window.pdfjsLib.getDocument({ data: bytes });',
+    '            loadingTask.promise.then(function (pdf) {',
+    '              var viewer = document.getElementById("viewer");',
+    '              var loading = document.getElementById("loading");',
+    '              if (loading) {',
+    '                loading.style.display = "none";',
+    '              }',
+    '              var renderPage = function (pageNumber) {',
+    '                pdf.getPage(pageNumber).then(function (page) {',
+    '                  var viewport = page.getViewport({ scale: 1.4 });',
+    '                  var canvas = document.createElement("canvas");',
+    '                  var context = canvas.getContext("2d");',
+    '                  canvas.height = viewport.height;',
+    '                  canvas.width = viewport.width;',
+    '                  viewer.appendChild(canvas);',
+    '                  var renderContext = { canvasContext: context, viewport: viewport };',
+    '                  page.render(renderContext).promise.then(function () {',
+    '                    if (pageNumber < pdf.numPages) {',
+    '                      renderPage(pageNumber + 1);',
+    '                    }',
+    '                  });',
+    '                });',
+    '              };',
+    '              renderPage(1);',
+    '            }).catch(function () {',
+    '              throw new Error("render_failed");',
+    '            });',
+    '          } else {',
+    '            throw new Error("pdfjs_missing");',
+    '          }',
+    '        } catch (error) {',
+    '          var loadingElement = document.getElementById("loading");',
+    '          var errorElement = document.getElementById("error");',
+    '          if (loadingElement) {',
+    '            loadingElement.style.display = "none";',
+    '          }',
+    '          if (errorElement) {',
+    '            errorElement.style.display = "block";',
+    '          }',
+    '          console.error("Inline PDF rendering failed", error);',
+    '        }',
+    '      })();',
+    '    </script>',
     '  </body>',
     '</html>',
   ].join('\n');
+};
 
 export type PdfViewerSource =
   | { type: 'uri'; uri: string }
@@ -198,19 +289,38 @@ const loadRemotePdfAsHtml = async (uri: string) => {
   const fileName = `remote-${hashRemoteUri(uri)}.pdf`;
   const filePath = `${cacheDirectory}${fileName}`;
 
+  let shouldCleanUp = false;
+
   try {
     const fileInfo = await FileSystem.getInfoAsync(filePath);
 
     if (!fileInfo.exists) {
       await FileSystem.downloadAsync(uri, filePath);
+      shouldCleanUp = true;
     }
 
     const base64 = await FileSystem.readAsStringAsync(filePath, {
       encoding: FileSystem.EncodingType.Base64,
     });
 
+    if (shouldCleanUp) {
+      try {
+        await FileSystem.deleteAsync(filePath, { idempotent: true });
+      } catch (cleanupError) {
+        console.warn('Failed to clean up temporary PDF file', cleanupError);
+      }
+    }
+
     return createInlinePdfHtml(base64);
   } catch (error) {
+    if (shouldCleanUp) {
+      try {
+        await FileSystem.deleteAsync(filePath, { idempotent: true });
+      } catch (cleanupError) {
+        console.warn('Failed to clean up temporary PDF file after error', cleanupError);
+      }
+    }
+
     console.warn('Failed to download remote PDF for inline preview', error);
     return null;
   }
