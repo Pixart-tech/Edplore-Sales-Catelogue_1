@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import type { PGSubject } from '../types';
+import type { Book, PGSubject } from '../types';
 import { getSubjectAppearance } from '../utils/subjectIcons';
 import { EyeIcon } from './icons/EyeIcon';
 import { openPdf } from '../utils/pdf';
@@ -10,8 +10,8 @@ interface PGContentProps {
 }
 
 const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
-  const handleOpenPdf = useCallback((pdfUrl: string) => {
-    openPdf(pdfUrl);
+  const handleOpenPdf = useCallback((book: Book) => {
+    openPdf(book.pdfUrl, book.pdfAsset);
   }, []);
 
   return (
@@ -38,7 +38,7 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
               </View>
               {book?.pdfUrl ? (
                 <Pressable
-                  onPress={() => handleOpenPdf(book.pdfUrl)}
+                  onPress={() => handleOpenPdf(book)}
                   style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
                   accessibilityRole="link"
                   accessibilityLabel={`View PDF for ${subject.name}`}
