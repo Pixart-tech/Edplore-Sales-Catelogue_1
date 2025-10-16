@@ -4,27 +4,63 @@ export const CURRICULUM_DATA: Curriculum = {
   PG: [
     {
       name: 'English',
-      books: [{ name: 'Pre-writing Strokes', pdfUrl: '.PG/English.pdf' }],
+      books: [
+        {
+          name: 'Pre-writing Strokes',
+          pdfUrl: '.PG/English.pdf',
+          pdfAsset: require('./.PG/English.pdf'),
+        },
+      ],
     },
     {
       name: 'Maths',
-      books: [{ name: 'Pre-math Concepts', pdfUrl: '.PG/Maths.pdf' }],
+      books: [
+        {
+          name: 'Pre-math Concepts',
+          pdfUrl: '.PG/Maths.pdf',
+          pdfAsset: require('./.PG/Maths.pdf'),
+        },
+      ],
     },
     {
       name: 'EVS',
-      books: [{ name: 'Myself & My Surroundings', pdfUrl: '.PG/EVS.pdf' }],
+      books: [
+        {
+          name: 'Myself & My Surroundings',
+          pdfUrl: '.PG/EVS.pdf',
+          pdfAsset: require('./.PG/EVS.pdf'),
+        },
+      ],
     },
     {
       name: 'Art & Craft',
-      books: [{ name: 'Colouring & Craft Activities', pdfUrl: '.PG/Art & craft.pdf' }],
+      books: [
+        {
+          name: 'Colouring & Craft Activities',
+          pdfUrl: '.PG/Art & craft.pdf',
+          pdfAsset: require('./.PG/Art & craft.pdf'),
+        },
+      ],
     },
     {
       name: 'Pattern',
-      books: [{ name: 'Pattern Writing Book', pdfUrl: '.PG/Pattern.pdf' }],
+      books: [
+        {
+          name: 'Pattern Writing Book',
+          pdfUrl: '.PG/Pattern.pdf',
+          pdfAsset: require('./.PG/Pattern.pdf'),
+        },
+      ],
     },
     {
       name: 'Rhymes & Stories',
-      books: [{ name: 'Collection of Rhymes & Stories', pdfUrl: '.PG/Rhymes & Stories.pdf' }],
+      books: [
+        {
+          name: 'Collection of Rhymes & Stories',
+          pdfUrl: '.PG/Rhymes & Stories.pdf',
+          pdfAsset: require('./.PG/Rhymes & Stories.pdf'),
+        },
+      ],
     },
   ],
   Nursery: [
