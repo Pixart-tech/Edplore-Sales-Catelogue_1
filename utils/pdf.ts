@@ -1,6 +1,10 @@
-import { Linking } from 'react-native';
+import { Linking, Platform } from 'react-native';
+import { Asset } from 'expo-asset';
+import * as FileSystem from 'expo-file-system';
 
 const hasScheme = (url: string) => /^[a-z][a-z0-9+\-.]*:/i.test(url);
+const hasFileOrContentScheme = (url: string) =>
+  url.startsWith('file://') || url.startsWith('content://');
 
 const encodePathSegment = (segment: string) => {
   if (segment.length === 0) {
@@ -52,15 +56,54 @@ export const sanitizePdfUrl = (pdfUrl: string) => {
   return `${encodedPath}${suffix}`;
 };
 
-export const openPdf = (pdfUrl: string) => {
+const resolveLocalAssetUri = async (pdfAsset?: number) => {
+  if (typeof pdfAsset !== 'number') {
+    return '';
+  }
+
+  try {
+    const asset = Asset.fromModule(pdfAsset);
+    await asset.downloadAsync();
+
+    const localUri = asset.localUri ?? asset.uri;
+    if (!localUri) {
+      return '';
+    }
+
+    if (Platform.OS === 'android' && localUri.startsWith('file://')) {
+      try {
+        const contentUri = await FileSystem.getContentUriAsync(localUri);
+        return contentUri ?? '';
+      } catch (error) {
+        console.warn('Failed to create content URI for asset', error);
+      }
+    }
+
+    return localUri;
+  } catch (error) {
+    console.warn('Failed to resolve local PDF asset', error);
+    return '';
+  }
+};
+
+const isOpenableUri = (uri: string) =>
+  hasScheme(uri) || hasFileOrContentScheme(uri) || uri.startsWith('/') || uri.startsWith('data:');
+
+export const openPdf = async (pdfUrl: string, pdfAsset?: number) => {
   const sanitizedUrl = sanitizePdfUrl(pdfUrl);
 
-  if (!sanitizedUrl) {
+  const targetUri = isOpenableUri(sanitizedUrl)
+    ? sanitizedUrl
+    : await resolveLocalAssetUri(pdfAsset);
+
+  if (!targetUri) {
     console.warn(`PDF URL is not available or invalid: "${pdfUrl}"`);
     return;
   }
 
-  Linking.openURL(sanitizedUrl).catch((error) => {
-    console.error(`Failed to open PDF at ${sanitizedUrl}`, error);
-  });
+  try {
+    await Linking.openURL(targetUri);
+  } catch (error) {
+    console.error(`Failed to open PDF at ${targetUri}`, error);
+  }
 };
