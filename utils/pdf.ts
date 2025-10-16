@@ -1,12 +1,8 @@
-import { Linking, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
 
 const hasScheme = (url: string) => /^[a-z][a-z0-9+\-.]*:/i.test(url);
-const hasFileOrContentScheme = (url: string) => {
-  const lowerUrl = url.toLowerCase();
-  return lowerUrl.startsWith('file:') || lowerUrl.startsWith('content:');
-};
 
 const encodePathSegment = (segment: string) => {
   if (segment.length === 0) {
@@ -58,6 +54,69 @@ export const sanitizePdfUrl = (pdfUrl?: string | number) => {
   return `${encodedPath}${suffix}`;
 };
 
+const getCacheDirectory = () => FileSystem.cacheDirectory ?? FileSystem.documentDirectory ?? '';
+
+const createCachePath = () => {
+  const directory = getCacheDirectory();
+  if (!directory) {
+    return '';
+  }
+
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 1_000_000);
+  return `${directory}pdf-${timestamp}-${random}.pdf`;
+};
+
+const normalizeFilePath = (uri: string) => {
+  if (uri.startsWith('file://')) {
+    return uri.replace('file://', '');
+  }
+
+  if (uri.startsWith('content://')) {
+    return uri;
+  }
+
+  if (Platform.OS === 'ios' && uri.startsWith('/')) {
+    return uri;
+  }
+
+  if (Platform.OS === 'android' && uri.startsWith('/')) {
+    return uri;
+  }
+
+  return uri;
+};
+
+const copyContentUriToFile = async (contentUri: string) => {
+  const targetPath = createCachePath();
+  if (!targetPath) {
+    return '';
+  }
+
+  try {
+    await FileSystem.copyAsync({ from: contentUri, to: targetPath });
+    return targetPath;
+  } catch (error) {
+    console.warn('Failed to copy content URI to cache directory', error);
+    return '';
+  }
+};
+
+const downloadPdfToCache = async (uri: string) => {
+  const targetPath = createCachePath();
+  if (!targetPath) {
+    return '';
+  }
+
+  try {
+    const result = await FileSystem.downloadAsync(uri, targetPath);
+    return result.uri;
+  } catch (error) {
+    console.warn(`Failed to download PDF from ${uri}`, error);
+    return '';
+  }
+};
+
 const resolveLocalAssetUri = async (pdfAsset?: number) => {
   if (typeof pdfAsset !== 'number') {
     return '';
@@ -72,13 +131,8 @@ const resolveLocalAssetUri = async (pdfAsset?: number) => {
       return '';
     }
 
-    if (Platform.OS === 'android' && localUri.startsWith('file://')) {
-      try {
-        const contentUri = await FileSystem.getContentUriAsync(localUri);
-        return contentUri ?? '';
-      } catch (error) {
-        console.warn('Failed to create content URI for asset', error);
-      }
+    if (localUri.startsWith('http://') || localUri.startsWith('https://')) {
+      return downloadPdfToCache(localUri);
     }
 
     return localUri;
@@ -88,25 +142,83 @@ const resolveLocalAssetUri = async (pdfAsset?: number) => {
   }
 };
 
-const isOpenableUri = (uri: string) =>
-  !!uri &&
-  (hasScheme(uri) || hasFileOrContentScheme(uri) || uri.startsWith('/') || uri.startsWith('data:'));
+const resolveUriToFile = async (uri: string) => {
+  if (uri.startsWith('http://') || uri.startsWith('https://')) {
+    return downloadPdfToCache(uri);
+  }
 
-export const openPdf = async (pdfUrl?: string | number, pdfAsset?: number) => {
+  if (uri.startsWith('content://')) {
+    return copyContentUriToFile(uri);
+  }
+
+  return uri;
+};
+
+export interface PdfDocument {
+  path: string;
+  cleanupUri?: string;
+  originalUri?: string;
+}
+
+export const resolvePdfDocument = async (
+  pdfUrl?: string | number,
+  pdfAsset?: number,
+): Promise<PdfDocument | null> => {
   const sanitizedUrl = sanitizePdfUrl(pdfUrl);
 
-  const targetUri = sanitizedUrl && isOpenableUri(sanitizedUrl)
-    ? sanitizedUrl
-    : await resolveLocalAssetUri(pdfAsset);
+  if (sanitizedUrl && hasScheme(sanitizedUrl)) {
+    const fileUri = await resolveUriToFile(sanitizedUrl);
+    if (fileUri) {
+      const path = fileUri.startsWith('content://') ? '' : normalizeFilePath(fileUri);
+      if (!path) {
+        console.warn(`Unable to prepare PDF from URI: "${sanitizedUrl}"`);
+        return null;
+      }
 
-  if (!targetUri) {
-    console.warn(`PDF URL is not available or invalid: "${String(pdfUrl ?? '')}"`);
+      return {
+        path,
+        cleanupUri: fileUri.startsWith('content://') || fileUri.startsWith('file://') ? fileUri : undefined,
+        originalUri: sanitizedUrl,
+      };
+    }
+  }
+
+  if (sanitizedUrl && !hasScheme(sanitizedUrl)) {
+    const fileUri = await resolveUriToFile(sanitizedUrl);
+    if (fileUri) {
+      return {
+        path: normalizeFilePath(fileUri),
+        cleanupUri: fileUri.startsWith('content://') || fileUri.startsWith('file://') ? fileUri : undefined,
+        originalUri: sanitizedUrl,
+      };
+    }
+  }
+
+  const assetUri = await resolveLocalAssetUri(pdfAsset);
+  if (assetUri) {
+    return {
+      path: normalizeFilePath(assetUri),
+      cleanupUri: assetUri.startsWith('file://') ? assetUri : undefined,
+      originalUri: assetUri,
+    };
+  }
+
+  console.warn(`PDF URL is not available or invalid: "${String(pdfUrl ?? '')}"`);
+  return null;
+};
+
+export const cleanupPdfDocument = async (document?: PdfDocument | null) => {
+  if (!document?.cleanupUri) {
     return;
   }
 
+  const uri = document.cleanupUri.startsWith('file://')
+    ? document.cleanupUri
+    : `file://${document.cleanupUri.replace(/^file:\/\//, '')}`;
+
   try {
-    await Linking.openURL(targetUri);
+    await FileSystem.deleteAsync(uri, { idempotent: true });
   } catch (error) {
-    console.error(`Failed to open PDF at ${targetUri}`, error);
+    console.warn(`Failed to delete temporary PDF file at ${uri}`, error);
   }
 };
