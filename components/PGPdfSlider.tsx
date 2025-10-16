@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Platform,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -9,8 +10,12 @@ import {
   ViewToken,
 } from 'react-native';
 import { Asset } from 'expo-asset';
-import { WebView } from 'react-native-webview';
 import type { PGSubject } from '../types';
+
+let NativeWebView: typeof import('react-native-webview').WebView | null = null;
+if (Platform.OS !== 'web') {
+  NativeWebView = require('react-native-webview').WebView;
+}
 
 interface PGPdfSliderProps {
   subjects: PGSubject[];
@@ -21,6 +26,12 @@ type SliderSubject = PGSubject & { key: string };
 
 const viewabilityConfig = {
   itemVisiblePercentThreshold: 70,
+};
+
+const iframeStyle: React.CSSProperties = {
+  border: 'none',
+  width: '100%',
+  height: '100%',
 };
 
 const PGPdfSlider: React.FC<PGPdfSliderProps> = ({ subjects, onIndexChange }) => {
@@ -151,8 +162,16 @@ const PGPdfSlider: React.FC<PGPdfSliderProps> = ({ subjects, onIndexChange }) =>
                 {book?.name ? <Text style={styles.slideBook}>{book.name}</Text> : null}
               </View>
               <View style={styles.pdfContainer}>
-                {uri ? (
-                  <WebView
+                {!uri ? (
+                  <View style={styles.missingPdf}>
+                    <Text style={styles.missingPdfText}>PDF file missing for this subject.</Text>
+                  </View>
+                ) : Platform.OS === 'web' ? (
+                  <View style={styles.webFrame}>
+                    <iframe src={uri} title={`${item.name} PDF preview`} style={iframeStyle} />
+                  </View>
+                ) : NativeWebView ? (
+                  <NativeWebView
                     originWhitelist={["*"]}
                     source={{ uri }}
                     allowFileAccess
@@ -163,7 +182,7 @@ const PGPdfSlider: React.FC<PGPdfSliderProps> = ({ subjects, onIndexChange }) =>
                   />
                 ) : (
                   <View style={styles.missingPdf}>
-                    <Text style={styles.missingPdfText}>PDF file missing for this subject.</Text>
+                    <Text style={styles.missingPdfText}>PDF preview is not supported on this platform.</Text>
                   </View>
                 )}
               </View>
@@ -246,6 +265,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   pdf: {
+    flex: 1,
+  },
+  webFrame: {
     flex: 1,
   },
   missingPdf: {
