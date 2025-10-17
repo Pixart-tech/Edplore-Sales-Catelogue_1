@@ -21,7 +21,8 @@
       "expo-router"
     ],
     "android": {
-      "package": "com.praphul09.edploresalescatalogue"
+      "package": "com.praphul09.edploresalescatalogue",
+      "newArchEnabled": true
     }
   }
 }

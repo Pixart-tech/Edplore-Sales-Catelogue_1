@@ -31,7 +31,7 @@ type PdfViewerContextValue = {
 
 const PdfViewerContext = createContext<PdfViewerContextValue | undefined>(undefined);
 
-type NormalizedImageSource = number | ImageURISource;
+type NormalizedImageSource = ImageURISource;
 
 interface PreviewState {
   visible: boolean;
@@ -57,7 +57,8 @@ const normalizeImageSource = (
   }
 
   if (typeof source === 'number') {
-    return [source];
+    const resolved = Image.resolveAssetSource(source);
+    return resolved?.uri ? [resolved] : [];
   }
 
   if (typeof source === 'string') {
@@ -65,13 +66,20 @@ const normalizeImageSource = (
   }
 
   if (typeof source === 'object') {
-    if ('uri' in source && source.uri) {
-      return [source as ImageURISource];
+    const candidate = source as
+      | (ImageURISource & { default?: PreviewImageSource; localUri?: string })
+      | { default?: PreviewImageSource; localUri?: string };
+
+    if ('localUri' in candidate && typeof candidate.localUri === 'string') {
+      return [{ uri: candidate.localUri }];
     }
 
-    if ('default' in (source as Record<string, unknown>)) {
-      const defaultSource = (source as { default: PreviewImageSource }).default;
-      return defaultSource ? normalizeImageSource(defaultSource) : [];
+    if ('uri' in candidate && typeof candidate.uri === 'string') {
+      return [candidate as ImageURISource];
+    }
+
+    if ('default' in candidate && candidate.default) {
+      return normalizeImageSource(candidate.default);
     }
   }
 
