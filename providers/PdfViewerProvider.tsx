@@ -17,7 +17,6 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import type { ViewToken } from 'react-native';
-import type { ImageSourcePropType } from 'react-native';
 import type { PreviewImageSource } from '../types';
 
 type PreviewOpenParams = {
@@ -35,7 +34,7 @@ const PdfViewerContext = createContext<PdfViewerContextValue | undefined>(undefi
 interface PreviewState {
   visible: boolean;
   title: string;
-  imageAssets: ImageSourcePropType[];
+  imageAssets: string[];
 }
 
 const initialState: PreviewState = {
@@ -65,14 +64,13 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
-    const normalizedImages = imageAssets as ImageSourcePropType[];
-
+    const normalizedImages = Array.from(imageAssets);
     console.log('📦 Normalized Images Count:', normalizedImages.length);
 
     setState({
       visible: true,
       title: title ?? 'Preview',
-      imageAssets: normalizedImages,
+      imageAssets: normalizedImages as string[],
     });
     setCurrentImageIndex(0);
 
@@ -144,9 +142,7 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             contentContainerStyle={styles.imageListContent}
             onViewableItemsChanged={handleViewableItemsChanged}
             viewabilityConfig={viewabilityConfig}
-            decelerationRate="fast"
-            snapToInterval={sliderWidth}
-            snapToAlignment="center"
+            scrollEnabled={true}
           />
         </View>
         <View style={styles.pagination}>
