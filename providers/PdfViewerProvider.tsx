@@ -61,7 +61,8 @@ const normalizeImageSource = (
   }
 
   if (typeof source === 'number') {
-    return [source];
+    const resolved = Image.resolveAssetSource(source);
+    return resolved?.uri ? [resolved] : [];
   }
 
   if (typeof source === 'string') {
