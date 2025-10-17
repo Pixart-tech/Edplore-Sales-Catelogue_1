@@ -16,7 +16,11 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import type { ImageURISource, ViewToken } from 'react-native';
+import type {
+  ImageSourcePropType,
+  ImageURISource,
+  ViewToken,
+} from 'react-native';
 import type { PreviewImageSource } from '../types';
 
 type PreviewOpenParams = {
@@ -31,7 +35,7 @@ type PdfViewerContextValue = {
 
 const PdfViewerContext = createContext<PdfViewerContextValue | undefined>(undefined);
 
-type NormalizedImageSource = number | ImageURISource;
+type NormalizedImageSource = ImageSourcePropType;
 
 interface PreviewState {
   visible: boolean;
@@ -65,13 +69,22 @@ const normalizeImageSource = (
   }
 
   if (typeof source === 'object') {
-    if ('uri' in source && source.uri) {
-      return [source as ImageURISource];
+    const candidate = source as ImageURISource & {
+      default?: PreviewImageSource;
+      localUri?: string;
+      uri?: string;
+    };
+
+    if (typeof candidate.localUri === 'string') {
+      return [{ uri: candidate.localUri }];
     }
 
-    if ('default' in (source as Record<string, unknown>)) {
-      const defaultSource = (source as { default: PreviewImageSource }).default;
-      return defaultSource ? normalizeImageSource(defaultSource) : [];
+    if (typeof candidate.uri === 'string') {
+      return [candidate as ImageURISource];
+    }
+
+    if (candidate.default) {
+      return normalizeImageSource(candidate.default);
     }
   }
 
@@ -101,6 +114,9 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     const normalizedImages = imageAssets.flatMap((asset) => normalizeImageSource(asset));
     console.log('📦 Normalized Images Count:', normalizedImages.length);
+    if (normalizedImages.length > 0) {
+      console.log('🖼️ Sample normalized image source:', normalizedImages[0]);
+    }
 
     if (!normalizedImages.length) {
       console.warn('⚠️ No valid image assets available for preview.');
