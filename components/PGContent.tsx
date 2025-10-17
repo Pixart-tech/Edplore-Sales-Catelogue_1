@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Book, PGSubject } from '../types';
 import { getSubjectAppearance } from '../utils/subjectIcons';
 import { EyeIcon } from './icons/EyeIcon';
@@ -47,23 +47,6 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
                 <View style={styles.rowText}>
                   <Text style={styles.subjectName}>{subject.name}</Text>
                   {book?.name ? <Text style={styles.bookName}>{book.name}</Text> : null}
-
-                  {/* ✅ Directly render image previews here */}
-                  {book?.imageAssets?.length ? (
-                    <View style={styles.imageGrid}>
-                      {book.imageAssets.map((img, idx) => {
-                        const source = typeof img === 'string' ? { uri: img } : img;
-                        return (
-                          <Image
-                            key={idx}
-                            source={source}
-                            style={styles.previewImage}
-                            resizeMode="cover"
-                          />
-                        );
-                      })}
-                    </View>
-                  ) : null}
                 </View>
               </View>
 
@@ -132,18 +115,6 @@ const styles = StyleSheet.create({
   bookName: {
     fontSize: 13,
     color: '#475569',
-  },
-  imageGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 8,
-    gap: 8,
-  },
-  previewImage: {
-    width: 80,
-    height: 100,
-    borderRadius: 8,
-    backgroundColor: '#e2e8f0',
   },
   button: {
     flexDirection: 'row',

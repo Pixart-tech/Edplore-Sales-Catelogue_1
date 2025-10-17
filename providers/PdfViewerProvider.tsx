@@ -52,28 +52,56 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const closePreview = useCallback(() => {
+    console.log('🔴 CLOSE: Closing preview');
     setState(initialState);
     setCurrentImageIndex(0);
   }, []);
 
   const openPreview = useCallback(({ imageAssets, title }: PreviewOpenParams) => {
+    console.log('🟢 OPEN PREVIEW CALLED');
+    console.log('📊 Title:', title);
+    console.log('📊 Image Assets Count:', imageAssets?.length);
+    console.log('📊 Image Assets:', JSON.stringify(imageAssets, null, 2));
+
     if (!imageAssets || imageAssets.length === 0) {
-      console.warn('openPreview called without any image assets.');
+      console.warn('⚠️ openPreview called without any image assets.');
       return;
     }
 
     const normalizedImages = imageAssets
-      .map((img) => {
-        if (!img) return null;
+      .map((img, index) => {
+        console.log(`🖼️ Processing image ${index}:`, typeof img, img);
+        
+        if (!img) {
+          console.warn(`⚠️ Image ${index} is null/undefined`);
+          return null;
+        }
+        
         if (typeof img === 'string') {
+          console.log(`✅ Image ${index} is string URI:`, img);
           return { uri: img } as ImageSourcePropType;
         }
+        
+        if (typeof img === 'number') {
+          console.log(`✅ Image ${index} is require() number:`, img);
+          return img as ImageSourcePropType;
+        }
+        
+        if (typeof img === 'object') {
+          console.log(`✅ Image ${index} is object:`, JSON.stringify(img));
+          return img as ImageSourcePropType;
+        }
+        
+        console.warn(`⚠️ Image ${index} has unknown type:`, typeof img);
         return img;
       })
       .filter(Boolean) as ImageSourcePropType[];
 
+    console.log('📦 Normalized Images Count:', normalizedImages.length);
+    console.log('📦 Normalized Images:', JSON.stringify(normalizedImages, null, 2));
+
     if (normalizedImages.length === 0) {
-      console.warn('openPreview received image assets but none could be rendered.');
+      console.warn('⚠️ openPreview received image assets but none could be rendered.');
       return;
     }
 
@@ -83,6 +111,8 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       imageAssets: normalizedImages,
     });
     setCurrentImageIndex(0);
+    
+    console.log('✅ Preview state updated successfully');
   }, []);
 
   const contextValue = useMemo(
@@ -103,6 +133,7 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       const nextIndex = viewableItems[0]?.index;
       if (typeof nextIndex === 'number') {
+        console.log('📄 Page changed to:', nextIndex + 1);
         setCurrentImageIndex(nextIndex);
       }
     },
@@ -112,8 +143,17 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const sliderWidth = Math.max(screenWidth - 32, 280);
   const sliderHeight = Math.max(screenHeight - 260, 240);
 
+  console.log('📐 Slider dimensions:', { sliderWidth, sliderHeight, screenWidth, screenHeight });
+
   const renderContent = () => {
+    console.log('🎨 RENDER CONTENT - State:', {
+      visible: state.visible,
+      imageCount: state.imageAssets.length,
+      currentIndex: currentImageIndex,
+    });
+
     if (!state.imageAssets.length) {
+      console.log('❌ No images to display');
       return (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>Preview is not available.</Text>
@@ -130,15 +170,34 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             keyExtractor={(_, index) => `preview-image-${index}`}
-            renderItem={({ item }) => (
-              <View style={[styles.imageSlide, { width: sliderWidth }]}>
-                <Image
-                  source={item}
-                  style={[styles.image, { width: sliderWidth, height: sliderHeight }]}
-                  resizeMode="contain"
-                />
-              </View>
-            )}
+            renderItem={({ item, index }) => {
+              console.log(`🖼️ Rendering FlatList item ${index}:`, item);
+              console.log(`🔍 Item type: ${typeof item}, value: ${JSON.stringify(item)}`);
+              
+              return (
+                <View style={[styles.imageSlide, { width: sliderWidth }]}>
+                  <Image
+                    source={item}
+                    style={[styles.image, { width: sliderWidth, height: sliderHeight }]}
+                    resizeMode="contain"
+                    onLoadStart={() => console.log(`📥 Image ${index} loading started`)}
+                    onLoad={(e) => {
+                      console.log(`✅ Image ${index} loaded successfully`);
+                      console.log(`✅ Image ${index} dimensions:`, e.nativeEvent.source);
+                    }}
+                    onError={(error) => {
+                      console.error(`❌ Image ${index} failed to load`);
+                      console.error(`❌ Error details:`, JSON.stringify(error.nativeEvent, null, 2));
+                    }}
+                  />
+                  {/* Debug overlay */}
+                  <View style={styles.debugOverlay}>
+                    <Text style={styles.debugText}>Image {index + 1}</Text>
+                    <Text style={styles.debugText}>Source: {typeof item === 'number' ? `require(${item})` : JSON.stringify(item)}</Text>
+                  </View>
+                </View>
+              );
+            }}
             style={styles.imageList}
             contentContainerStyle={styles.imageListContent}
             onViewableItemsChanged={handleViewableItemsChanged}
@@ -166,6 +225,7 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         transparent={Platform.OS === 'ios'}
         onRequestClose={closePreview}
         presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}
+        onShow={() => console.log('🎭 Modal shown')}
       >
         <View style={styles.overlay}>
           <View style={styles.modalContent}>
@@ -295,5 +355,19 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     fontSize: 15,
     fontWeight: '600',
+  },
+  debugOverlay: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    right: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    padding: 8,
+    borderRadius: 8,
+  },
+  debugText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
 });
