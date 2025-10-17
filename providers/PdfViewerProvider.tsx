@@ -65,27 +65,9 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
-    // Convert string paths to require() for local images
-    const normalizedImages: ImageSourcePropType[] = imageAssets
-      .map(img => {
-        if (typeof img === 'string') {
-          try {
-            return require(`../assets/${img}`);
-          } catch (e) {
-            console.warn(`❌ Image ${img} could not be loaded.`, e);
-            return null;
-          }
-        }
-        return img;
-      })
-      .filter(Boolean) as ImageSourcePropType[];
+    const normalizedImages: ImageSourcePropType[] = Array.from(imageAssets);
 
     console.log('📦 Normalized Images Count:', normalizedImages.length);
-
-    if (normalizedImages.length === 0) {
-      console.warn('⚠️ No valid images to display');
-      return;
-    }
 
     setState({
       visible: true,
