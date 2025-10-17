@@ -9,29 +9,37 @@ interface BookItemProps {
 }
 
 const BookItem: React.FC<BookItemProps> = ({ book }) => {
-  const { openPdf } = usePdfViewer();
+  const { openPreview } = usePdfViewer();
+
+  const hasPreview = Boolean(book.imageAssets && book.imageAssets.length > 0);
 
   const handleOpen = useCallback(() => {
-    openPdf({
-      pdfUrl: book.pdfUrl,
-      pdfAsset: book.pdfAsset,
+    if (!book.imageAssets || book.imageAssets.length === 0) {
+      return;
+    }
+
+    openPreview({
       imageAssets: book.imageAssets,
       title: book.name,
     });
-  }, [book.pdfUrl, book.pdfAsset, book.imageAssets, book.name, openPdf]);
+  }, [book.imageAssets, book.name, openPreview]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{book.name}</Text>
-      <Pressable
-        onPress={handleOpen}
-        style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-        accessibilityRole="link"
-        accessibilityLabel={`View preview for ${book.name}`}
-      >
-        <EyeIcon size={18} color="#ffffff" />
-        <Text style={styles.buttonLabel}>View</Text>
-      </Pressable>
+      {hasPreview ? (
+        <Pressable
+          onPress={handleOpen}
+          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+          accessibilityRole="link"
+          accessibilityLabel={`View preview for ${book.name}`}
+        >
+          <EyeIcon size={18} color="#ffffff" />
+          <Text style={styles.buttonLabel}>View</Text>
+        </Pressable>
+      ) : (
+        <Text style={styles.previewUnavailable}>Preview unavailable</Text>
+      )}
     </View>
   );
 };
@@ -70,6 +78,12 @@ const styles = StyleSheet.create({
   },
   buttonLabel: {
     color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  previewUnavailable: {
+    color: '#94a3b8',
     fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',

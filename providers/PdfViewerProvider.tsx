@@ -4,10 +4,8 @@ import React, {
   useContext,
   useMemo,
   useState,
-  useEffect,
 } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Modal,
@@ -19,140 +17,82 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import type { ViewToken } from 'react-native';
-import { WebView } from 'react-native-webview';
-import * as FileSystem from 'expo-file-system';
-import { createPdfViewerSource, PdfViewerSource } from '../utils/pdf';
+import type { ImageSourcePropType } from 'react-native';
+import type { PreviewImageSource } from '../types';
 
-
-type PdfOpenParams = {
-  pdfUrl?: string | number;
-  pdfAsset?: number;
-  imageAssets?: readonly number[];
+type PreviewOpenParams = {
+  imageAssets: readonly PreviewImageSource[];
   title?: string;
 };
 
 type PdfViewerContextValue = {
-  openPdf: (params: PdfOpenParams) => Promise<void>;
-  closePdf: () => void;
+  openPreview: (params: PreviewOpenParams) => void;
+  closePreview: () => void;
 };
 
-const PdfViewerContext = createContext<PdfViewerContextValue | undefined>(
-  undefined
-);
+const PdfViewerContext = createContext<PdfViewerContextValue | undefined>(undefined);
 
-interface PdfViewerState {
+type NormalizedImageSource = ImageSourcePropType;
+
+interface PreviewState {
   visible: boolean;
   title: string;
-  loading: boolean;
-  error: string | null;
-  source: PdfViewerSource | null;
-  imageAssets: readonly number[] | null;
+  imageAssets: NormalizedImageSource[];
 }
 
-const initialState: PdfViewerState = {
+const initialState: PreviewState = {
   visible: false,
   title: '',
-  loading: false,
-  error: null,
-  source: null,
-  imageAssets: null,
+  imageAssets: [],
 };
 
-export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [state, setState] = useState<PdfViewerState>(initialState);
+export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [state, setState] = useState<PreviewState>(initialState);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
-  const closePdf = useCallback(() => {
+  const closePreview = useCallback(() => {
     setState(initialState);
     setCurrentImageIndex(0);
   }, []);
 
-  const openPdf = useCallback(
-    async ({ pdfUrl, pdfAsset, imageAssets, title }: PdfOpenParams) => {
-      const hasImages = Array.isArray(imageAssets) && imageAssets.length > 0;
+  const openPreview = useCallback(({ imageAssets, title }: PreviewOpenParams) => {
+    if (!imageAssets || imageAssets.length === 0) {
+      console.warn('openPreview called without any image assets.');
+      return;
+    }
 
-      // ✅ Normalize image sources for React Native
-      const normalizedImages = hasImages
-        ? imageAssets.map((img) => {
-            // Handle `require()` images or URI strings
-            if (typeof img === 'number') return img;
-            if (typeof img === 'string') return { uri: img };
-            if (img?.uri) return { uri: img.uri };
-            return img;
-          })
-        : null;
-
-      setState({
-        visible: true,
-        title: title ?? 'Preview',
-        loading: hasImages ? false : true,
-        error: null,
-        source: null,
-        imageAssets: normalizedImages,
-      });
-
-
-      setCurrentImageIndex(0);
-
-      if (hasImages) {
-        return;
-      }
-
-      try {
-        const source = await createPdfViewerSource(pdfUrl, pdfAsset);
-
-        if (!source) {
-          setState({
-            visible: true,
-            title: title ?? 'Preview',
-            loading: false,
-            error: 'Preview is not available.',
-            source: null,
-            imageAssets: null,
-          });
-          return;
+    const normalizedImages = imageAssets
+      .map((img) => {
+        if (!img) return null;
+        if (typeof img === 'string') {
+          return { uri: img } as ImageSourcePropType;
         }
+        return img;
+      })
+      .filter(Boolean) as ImageSourcePropType[];
 
-        setState({
-          visible: true,
-          title: title ?? 'Preview',
-          loading: false,
-          error: null,
-          source,
-          imageAssets: null,
-        });
-      } catch (error) {
-        console.error('Failed to open PDF inline', error);
-        setState({
-          visible: true,
-          title: title ?? 'Preview',
-          loading: false,
-          error: 'Unable to load preview. Please try again later.',
-          source: null,
-          imageAssets: null,
-        });
-      }
-    },
-    []
-  );
+    if (normalizedImages.length === 0) {
+      console.warn('openPreview received image assets but none could be rendered.');
+      return;
+    }
+
+    setState({
+      visible: true,
+      title: title ?? 'Preview',
+      imageAssets: normalizedImages,
+    });
+    setCurrentImageIndex(0);
+  }, []);
 
   const contextValue = useMemo(
-    () => ({ openPdf, closePdf }),
-    [openPdf, closePdf]
+    () => ({ openPreview, closePreview }),
+    [openPreview, closePreview],
   );
-
-  useEffect(() => {
-    if (!state.visible) {
-      setCurrentImageIndex(0);
-    }
-  }, [state.visible]);
 
   const viewabilityConfig = useMemo(
     () => ({ viewAreaCoveragePercentThreshold: 80 }),
-    []
+    [],
   );
 
   const handleViewableItemsChanged = useCallback(
@@ -166,111 +106,54 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({
         setCurrentImageIndex(nextIndex);
       }
     },
-    []
+    [],
   );
 
   const sliderWidth = Math.max(screenWidth - 32, 280);
   const sliderHeight = Math.max(screenHeight - 260, 240);
 
   const renderContent = () => {
-    if (state.imageAssets && state.imageAssets.length > 0) {
+    if (!state.imageAssets.length) {
       return (
-        <View style={styles.imageSliderContainer}>
-          <View style={[styles.imageListWrapper, { width: sliderWidth }]}>
-            <FlatList
-              data={state.imageAssets}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(_, index) => `preview-image-${index}`}
-              renderItem={({ item }) => (
-                <View
-                  style={[styles.imageSlide, { width: sliderWidth }]}
-                >
-                  <Image
-                    source={item}
-                    style={[
-                      styles.image,
-                      { width: sliderWidth, height: sliderHeight },
-                    ]}
-                    resizeMode="contain"
-                  />
-                </View>
-              )}
-              style={styles.imageList}
-              contentContainerStyle={styles.imageListContent}
-              onViewableItemsChanged={handleViewableItemsChanged}
-              viewabilityConfig={viewabilityConfig}
-              decelerationRate="fast"
-              snapToInterval={sliderWidth}
-              snapToAlignment="center"
-            />
-          </View>
-          <View style={styles.pagination}>
-            <Text style={styles.paginationText}>
-              Page {currentImageIndex + 1} of {state.imageAssets.length}
-            </Text>
-          </View>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>Preview is not available.</Text>
         </View>
       );
     }
 
-    if (state.loading) {
-      return (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4338ca" />
-          <Text style={styles.loadingText}>Loading preview...</Text>
-        </View>
-      );
-    }
-
-    if (state.error) {
-      return (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{state.error}</Text>
-        </View>
-      );
-    }
-
-    if (!state.source) return null;
-
-    if (state.source.type === 'html') {
-      return (
-        <WebView
-          originWhitelist={['*']}
-          source={{ html: state.source.html }}
-          style={styles.webView}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          startInLoadingState={true}
-          renderLoading={() => (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#4338ca" />
-              <Text style={styles.loadingText}>Rendering preview...</Text>
-            </View>
-          )}
-        />
-      );
-    }
-
-    // For URI type (remote URLs or data URIs)
     return (
-      <WebView
-        originWhitelist={['*']}
-        source={{ uri: state.source.uri }}
-        style={styles.webView}
-        startInLoadingState
-        allowFileAccess={true}
-        allowFileAccessFromFileURLs={true}
-        allowUniversalAccessFromFileURLs={true}
-        mixedContentMode="always"
-        renderLoading={() => (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4338ca" />
-            <Text style={styles.loadingText}>Loading preview...</Text>
-          </View>
-        )}
-      />
+      <View style={styles.imageSliderContainer}>
+        <View style={[styles.imageListWrapper, { width: sliderWidth }]}>
+          <FlatList
+            data={state.imageAssets}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(_, index) => `preview-image-${index}`}
+            renderItem={({ item }) => (
+              <View style={[styles.imageSlide, { width: sliderWidth }]}>
+                <Image
+                  source={item}
+                  style={[styles.image, { width: sliderWidth, height: sliderHeight }]}
+                  resizeMode="contain"
+                />
+              </View>
+            )}
+            style={styles.imageList}
+            contentContainerStyle={styles.imageListContent}
+            onViewableItemsChanged={handleViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
+            decelerationRate="fast"
+            snapToInterval={sliderWidth}
+            snapToAlignment="center"
+          />
+        </View>
+        <View style={styles.pagination}>
+          <Text style={styles.paginationText}>
+            Page {currentImageIndex + 1} of {state.imageAssets.length}
+          </Text>
+        </View>
+      </View>
     );
   };
 
@@ -281,23 +164,18 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({
         visible={state.visible}
         animationType="slide"
         transparent={Platform.OS === 'ios'}
-        onRequestClose={closePdf}
-        presentationStyle={
-          Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'
-        }
+        onRequestClose={closePreview}
+        presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}
       >
         <View style={styles.overlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{state.title}</Text>
               <Pressable
-                onPress={closePdf}
+                onPress={closePreview}
                 accessibilityRole="button"
                 accessibilityLabel="Close preview"
-                style={({ pressed }) => [
-                  styles.closeButton,
-                  pressed && styles.closeButtonPressed,
-                ]}
+                style={({ pressed }) => [styles.closeButton, pressed && styles.closeButtonPressed]}
               >
                 <Text style={styles.closeButtonLabel}>Close</Text>
               </Pressable>
@@ -369,34 +247,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  webView: {
-    flex: 1,
-    backgroundColor: '#111827',
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    backgroundColor: '#111827',
-  },
-  loadingText: {
-    color: '#e2e8f0',
-    fontSize: 14,
-  },
-  errorContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    backgroundColor: '#111827',
-  },
-  errorText: {
-    textAlign: 'center',
-    color: '#f87171',
-    fontSize: 15,
-    fontWeight: '600',
-  },
   imageSliderContainer: {
     flex: 1,
     width: '100%',
@@ -432,6 +282,18 @@ const styles = StyleSheet.create({
   paginationText: {
     color: '#e2e8f0',
     fontSize: 13,
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: '#94a3b8',
+    fontSize: 15,
     fontWeight: '600',
   },
 });

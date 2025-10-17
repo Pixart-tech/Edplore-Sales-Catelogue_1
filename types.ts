@@ -1,8 +1,10 @@
+import type { ImageSourcePropType } from 'react-native';
+
+export type PreviewImageSource = ImageSourcePropType | string;
+
 export interface Book {
   name: string;
-  pdfUrl?: string;
-  pdfAsset?: number;
-  imageAssets?: readonly number[];
+  imageAssets?: readonly PreviewImageSource[];
 }
 
 export interface StandardSubject {
@@ -28,8 +30,8 @@ export interface Curriculum {
 }
 
 export interface PreWrittenBook {
-    name: string;
-    pdfUrl: string;
+  name: string;
+  imageAssets?: readonly PreviewImageSource[];
 }
 
 export interface PreWrittenSubject {
