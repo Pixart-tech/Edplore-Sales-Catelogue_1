@@ -1,7 +1,8 @@
 export interface Book {
   name: string;
-  pdfUrl: string;
+  pdfUrl?: string;
   pdfAsset?: number;
+  imageAssets?: readonly number[];
 }
 
 export interface StandardSubject {

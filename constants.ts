@@ -1,4 +1,12 @@
 import type { Curriculum, PreWrittenClass } from './types';
+import {
+  PG_ART_AND_CRAFT_IMAGES,
+  PG_ENGLISH_IMAGES,
+  PG_EVS_IMAGES,
+  PG_MATHS_IMAGES,
+  PG_PATTERN_IMAGES,
+  PG_RHYMES_AND_STORIES_IMAGES,
+} from './assets/PG_image';
 
 export const CURRICULUM_DATA: Curriculum = {
   PG: [
@@ -7,8 +15,7 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Pre-writing Strokes',
-          pdfUrl: '',
-          pdfAsset: require('./assets/PG/English.pdf'),
+          imageAssets: PG_ENGLISH_IMAGES,
         },
       ],
     },
@@ -17,8 +24,7 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Pre-math Concepts',
-          pdfUrl: '',
-          pdfAsset: require('./assets/PG/Maths.pdf'),
+          imageAssets: PG_MATHS_IMAGES,
         },
       ],
     },
@@ -27,8 +33,7 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Myself & My Surroundings',
-          pdfUrl: '',
-          pdfAsset: require('./assets/PG/EVS.pdf'),
+          imageAssets: PG_EVS_IMAGES,
         },
       ],
     },
@@ -37,8 +42,7 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Colouring & Craft Activities',
-          pdfUrl: '',
-          pdfAsset: require('./assets/PG/Art & craft.pdf'),
+          imageAssets: PG_ART_AND_CRAFT_IMAGES,
         },
       ],
     },
@@ -47,8 +51,7 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Pattern Writing Book',
-          pdfUrl: '',
-          pdfAsset: require('./assets/PG/Pattern.pdf'),
+          imageAssets: PG_PATTERN_IMAGES,
         },
       ],
     },
@@ -57,8 +60,7 @@ export const CURRICULUM_DATA: Curriculum = {
       books: [
         {
           name: 'Collection of Rhymes & Stories',
-          pdfUrl: '',
-          pdfAsset: require('./assets/PG/Rhymes & Stories.pdf'),
+          imageAssets: PG_RHYMES_AND_STORIES_IMAGES,
         },
       ],
     },

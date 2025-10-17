@@ -13,7 +13,12 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
   const { openPdf } = usePdfViewer();
 
   const handleOpenPdf = useCallback((book: Book) => {
-    openPdf({ pdfUrl: book.pdfUrl, pdfAsset: book.pdfAsset, title: book.name });
+    openPdf({
+      pdfUrl: book.pdfUrl,
+      pdfAsset: book.pdfAsset,
+      imageAssets: book.imageAssets,
+      title: book.name,
+    });
   }, [openPdf]);
 
   return (
@@ -22,7 +27,9 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
         {subjects.map((subject) => {
           const { Icon, backgroundColor, iconColor } = getSubjectAppearance(subject.name);
           const book = subject.books[0];
-          const hasPdf = Boolean(book?.pdfUrl || book?.pdfAsset);
+          const hasPreview = Boolean(
+            book?.imageAssets?.length || book?.pdfUrl || book?.pdfAsset
+          );
 
           return (
             <View
@@ -39,18 +46,18 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
                   {book?.name ? <Text style={styles.bookName}>{book.name}</Text> : null}
                 </View>
               </View>
-              {hasPdf ? (
+              {hasPreview ? (
                 <Pressable
                   onPress={() => handleOpenPdf(book)}
                   style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
                   accessibilityRole="link"
-                  accessibilityLabel={`View PDF for ${subject.name}`}
+                  accessibilityLabel={`View preview for ${subject.name}`}
                 >
                   <EyeIcon size={16} color="#ffffff" />
                   <Text style={styles.buttonLabel}>View</Text>
                 </Pressable>
               ) : (
-                <Text style={styles.pdfUnavailable}>PDF unavailable</Text>
+                <Text style={styles.pdfUnavailable}>Preview unavailable</Text>
               )}
             </View>
           );
