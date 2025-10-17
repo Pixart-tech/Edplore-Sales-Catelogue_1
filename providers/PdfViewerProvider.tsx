@@ -115,22 +115,24 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 80,
     alignItems: 'center',
-    gap: 40, // spacing between pages
   },
   page: {
-    width: width * 0.95,
+    width: width,
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    borderRadius: 10,
-    paddingVertical: 16,
-    elevation: 3,
+    backgroundColor: '#000',
+    borderRadius: 0,
+    paddingVertical: 0,
+    marginBottom: -2, 
+    overflow: 'hidden',
   },
   image: {
     width: '100%',
     height: undefined,
-    aspectRatio: 0.707, // approx A4 ratio (8.5x12)
+    aspectRatio: 0.707,
     resizeMode: 'contain',
+    marginBottom: -2, 
   },
+
   pageNumber: {
     color: '#bbb',
     fontSize: 12,
