@@ -8,22 +8,26 @@ import React, {
 } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
+  Image,
   Modal,
   Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
+import type { ViewToken } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system';
 import { createPdfViewerSource, PdfViewerSource } from '../utils/pdf';
-import { Asset } from 'expo-asset';
 
 
 type PdfOpenParams = {
   pdfUrl?: string | number;
   pdfAsset?: number;
+  imageAssets?: readonly number[];
   title?: string;
 };
 
@@ -42,6 +46,7 @@ interface PdfViewerState {
   loading: boolean;
   error: string | null;
   source: PdfViewerSource | null;
+  imageAssets: readonly number[] | null;
 }
 
 const initialState: PdfViewerState = {
@@ -50,26 +55,39 @@ const initialState: PdfViewerState = {
   loading: false,
   error: null,
   source: null,
+  imageAssets: null,
 };
 
 export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [state, setState] = useState<PdfViewerState>(initialState);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const closePdf = useCallback(() => {
     setState(initialState);
+    setCurrentImageIndex(0);
   }, []);
 
   const openPdf = useCallback(
-    async ({ pdfUrl, pdfAsset, title }: PdfOpenParams) => {
+    async ({ pdfUrl, pdfAsset, imageAssets, title }: PdfOpenParams) => {
+      const hasImages = Array.isArray(imageAssets) && imageAssets.length > 0;
+
       setState({
         visible: true,
         title: title ?? 'Preview',
-        loading: true,
+        loading: hasImages ? false : true,
         error: null,
         source: null,
+        imageAssets: hasImages ? imageAssets : null,
       });
+
+      setCurrentImageIndex(0);
+
+      if (hasImages) {
+        return;
+      }
 
       try {
         const source = await createPdfViewerSource(pdfUrl, pdfAsset);
@@ -79,8 +97,9 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({
             visible: true,
             title: title ?? 'Preview',
             loading: false,
-            error: 'PDF is not available for preview.',
+            error: 'Preview is not available.',
             source: null,
+            imageAssets: null,
           });
           return;
         }
@@ -91,6 +110,7 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({
           loading: false,
           error: null,
           source,
+          imageAssets: null,
         });
       } catch (error) {
         console.error('Failed to open PDF inline', error);
@@ -98,8 +118,9 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({
           visible: true,
           title: title ?? 'Preview',
           loading: false,
-          error: 'Unable to load PDF. Please try again later.',
+          error: 'Unable to load preview. Please try again later.',
           source: null,
+          imageAssets: null,
         });
       }
     },
@@ -111,12 +132,82 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({
     [openPdf, closePdf]
   );
 
+  useEffect(() => {
+    if (!state.visible) {
+      setCurrentImageIndex(0);
+    }
+  }, [state.visible]);
+
+  const viewabilityConfig = useMemo(
+    () => ({ viewAreaCoveragePercentThreshold: 80 }),
+    []
+  );
+
+  const handleViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      if (!viewableItems || viewableItems.length === 0) {
+        return;
+      }
+
+      const nextIndex = viewableItems[0]?.index;
+      if (typeof nextIndex === 'number') {
+        setCurrentImageIndex(nextIndex);
+      }
+    },
+    []
+  );
+
+  const sliderWidth = Math.max(screenWidth - 32, 280);
+  const sliderHeight = Math.max(screenHeight - 260, 240);
+
   const renderContent = () => {
+    if (state.imageAssets && state.imageAssets.length > 0) {
+      return (
+        <View style={styles.imageSliderContainer}>
+          <View style={[styles.imageListWrapper, { width: sliderWidth }]}>
+            <FlatList
+              data={state.imageAssets}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(_, index) => `preview-image-${index}`}
+              renderItem={({ item }) => (
+                <View
+                  style={[styles.imageSlide, { width: sliderWidth }]}
+                >
+                  <Image
+                    source={item}
+                    style={[
+                      styles.image,
+                      { width: sliderWidth, height: sliderHeight },
+                    ]}
+                    resizeMode="contain"
+                  />
+                </View>
+              )}
+              style={styles.imageList}
+              contentContainerStyle={styles.imageListContent}
+              onViewableItemsChanged={handleViewableItemsChanged}
+              viewabilityConfig={viewabilityConfig}
+              decelerationRate="fast"
+              snapToInterval={sliderWidth}
+              snapToAlignment="center"
+            />
+          </View>
+          <View style={styles.pagination}>
+            <Text style={styles.paginationText}>
+              Page {currentImageIndex + 1} of {state.imageAssets.length}
+            </Text>
+          </View>
+        </View>
+      );
+    }
+
     if (state.loading) {
       return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#4338ca" />
-          <Text style={styles.loadingText}>Loading PDF...</Text>
+          <Text style={styles.loadingText}>Loading preview...</Text>
         </View>
       );
     }
@@ -143,7 +234,7 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({
           renderLoading={() => (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#4338ca" />
-              <Text style={styles.loadingText}>Rendering PDF...</Text>
+              <Text style={styles.loadingText}>Rendering preview...</Text>
             </View>
           )}
         />
@@ -164,7 +255,7 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({
         renderLoading={() => (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#4338ca" />
-            <Text style={styles.loadingText}>Loading PDF...</Text>
+            <Text style={styles.loadingText}>Loading preview...</Text>
           </View>
         )}
       />
@@ -190,7 +281,7 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({
               <Pressable
                 onPress={closePdf}
                 accessibilityRole="button"
-                accessibilityLabel="Close PDF preview"
+                accessibilityLabel="Close preview"
                 style={({ pressed }) => [
                   styles.closeButton,
                   pressed && styles.closeButtonPressed,
@@ -263,6 +354,8 @@ const styles = StyleSheet.create({
   modalBody: {
     flex: 1,
     backgroundColor: '#111827',
+    paddingVertical: 12,
+    alignItems: 'center',
   },
   webView: {
     flex: 1,
@@ -290,6 +383,43 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#f87171',
     fontSize: 15,
+    fontWeight: '600',
+  },
+  imageSliderContainer: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+  },
+  imageList: {
+    flexGrow: 0,
+    flex: 1,
+  },
+  imageListContent: {
+    alignItems: 'stretch',
+  },
+  imageListWrapper: {
+    flex: 1,
+  },
+  imageSlide: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  image: {
+    borderRadius: 12,
+    backgroundColor: '#0f172a',
+  },
+  pagination: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 9999,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+  },
+  paginationText: {
+    color: '#e2e8f0',
+    fontSize: 13,
     fontWeight: '600',
   },
 });

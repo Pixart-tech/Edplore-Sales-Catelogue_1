@@ -12,8 +12,13 @@ const BookItem: React.FC<BookItemProps> = ({ book }) => {
   const { openPdf } = usePdfViewer();
 
   const handleOpen = useCallback(() => {
-    openPdf({ pdfUrl: book.pdfUrl, pdfAsset: book.pdfAsset, title: book.name });
-  }, [book.pdfUrl, book.pdfAsset, book.name, openPdf]);
+    openPdf({
+      pdfUrl: book.pdfUrl,
+      pdfAsset: book.pdfAsset,
+      imageAssets: book.imageAssets,
+      title: book.name,
+    });
+  }, [book.pdfUrl, book.pdfAsset, book.imageAssets, book.name, openPdf]);
 
   return (
     <View style={styles.container}>
@@ -22,7 +27,7 @@ const BookItem: React.FC<BookItemProps> = ({ book }) => {
         onPress={handleOpen}
         style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
         accessibilityRole="link"
-        accessibilityLabel={`View PDF for ${book.name}`}
+        accessibilityLabel={`View preview for ${book.name}`}
       >
         <EyeIcon size={18} color="#ffffff" />
         <Text style={styles.buttonLabel}>View</Text>
