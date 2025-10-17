@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
 import type { Book, PGSubject } from '../types';
 import { getSubjectAppearance } from '../utils/subjectIcons';
 import { EyeIcon } from './icons/EyeIcon';
@@ -12,14 +12,17 @@ interface PGContentProps {
 const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
   const { openPdf } = usePdfViewer();
 
-  const handleOpenPdf = useCallback((book: Book) => {
-    openPdf({
-      pdfUrl: book.pdfUrl,
-      pdfAsset: book.pdfAsset,
-      imageAssets: book.imageAssets,
-      title: book.name,
-    });
-  }, [openPdf]);
+  const handleOpenPdf = useCallback(
+    (book: Book) => {
+      openPdf({
+        pdfUrl: book.pdfUrl,
+        pdfAsset: book.pdfAsset,
+        imageAssets: book.imageAssets,
+        title: book.name,
+      });
+    },
+    [openPdf]
+  );
 
   return (
     <View style={styles.container}>
@@ -44,8 +47,23 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
                 <View style={styles.rowText}>
                   <Text style={styles.subjectName}>{subject.name}</Text>
                   {book?.name ? <Text style={styles.bookName}>{book.name}</Text> : null}
+
+                  {/* ✅ Directly render image previews here */}
+                  {book?.imageAssets?.length ? (
+                    <View style={styles.imageGrid}>
+                      {book.imageAssets.map((img, idx) => (
+                        <Image
+                          key={idx}
+                          source={img}
+                          style={styles.previewImage}
+                          resizeMode="cover"
+                        />
+                      ))}
+                    </View>
+                  ) : null}
                 </View>
               </View>
+
               {hasPreview ? (
                 <Pressable
                   onPress={() => handleOpenPdf(book)}
@@ -88,7 +106,7 @@ const styles = StyleSheet.create({
   },
   rowContent: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 12,
     flex: 1,
   },
@@ -100,8 +118,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   rowText: {
-    gap: 2,
     flex: 1,
+    gap: 4,
   },
   subjectName: {
     fontSize: 15,
@@ -111,6 +129,18 @@ const styles = StyleSheet.create({
   bookName: {
     fontSize: 13,
     color: '#475569',
+  },
+  imageGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+    gap: 8,
+  },
+  previewImage: {
+    width: 80,
+    height: 100,
+    borderRadius: 8,
+    backgroundColor: '#e2e8f0',
   },
   button: {
     flexDirection: 'row',

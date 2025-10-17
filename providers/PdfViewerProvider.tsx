@@ -74,14 +74,26 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({
     async ({ pdfUrl, pdfAsset, imageAssets, title }: PdfOpenParams) => {
       const hasImages = Array.isArray(imageAssets) && imageAssets.length > 0;
 
+      // ✅ Normalize image sources for React Native
+      const normalizedImages = hasImages
+        ? imageAssets.map((img) => {
+            // Handle `require()` images or URI strings
+            if (typeof img === 'number') return img;
+            if (typeof img === 'string') return { uri: img };
+            if (img?.uri) return { uri: img.uri };
+            return img;
+          })
+        : null;
+
       setState({
         visible: true,
         title: title ?? 'Preview',
         loading: hasImages ? false : true,
         error: null,
         source: null,
-        imageAssets: hasImages ? imageAssets : null,
+        imageAssets: normalizedImages,
       });
+
 
       setCurrentImageIndex(0);
 
