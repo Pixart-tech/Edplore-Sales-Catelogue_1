@@ -65,7 +65,7 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
-    const normalizedImages: ImageSourcePropType[] = Array.from(imageAssets);
+    const normalizedImages = imageAssets as ImageSourcePropType[];
 
     console.log('📦 Normalized Images Count:', normalizedImages.length);
 
@@ -107,6 +107,10 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const sliderHeight = Math.max(screenHeight - 260, 240);
 
   const renderContent = () => {
+    if (!sliderWidth || !sliderHeight) {
+      return null;
+    }
+
     if (!state.imageAssets.length) {
       return (
         <View style={styles.emptyContainer}>
@@ -123,7 +127,7 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            keyExtractor={(_, index) => `preview-image-${index}`}
+            keyExtractor={(_, index) => index.toString()}
             renderItem={({ item, index }) => (
               <View style={[styles.imageSlide, { width: sliderWidth }]}>
                 <Image
