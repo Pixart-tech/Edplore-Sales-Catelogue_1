@@ -5,12 +5,12 @@ import {
   Text,
   Image,
   StyleSheet,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 type PreviewImageSource = number;
 
@@ -34,7 +34,6 @@ export const usePdfViewer = () => useContext(PdfViewerContext);
 export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [visible, setVisible] = useState(false);
   const [previewData, setPreviewData] = useState<PreviewData | null>(null);
-  const [pageIndex, setPageIndex] = useState(0);
 
   const openPreview = (data: PreviewData) => {
     console.log('🟢 OPEN PREVIEW CALLED');
@@ -47,25 +46,15 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const closePreview = () => {
     setVisible(false);
     setPreviewData(null);
-    setPageIndex(0);
   };
-
-  const renderItem = ({ item }: { item: number }) => (
-    <View style={styles.page}>
-      <Image
-        source={item} // ✅ Direct static asset require()
-        style={styles.image}
-        resizeMode="contain"
-      />
-    </View>
-  );
 
   return (
     <PdfViewerContext.Provider value={{ openPreview, closePreview }}>
       {children}
 
-      <Modal visible={visible} animationType="slide" transparent={true}>
+      <Modal visible={visible} animationType="slide" transparent={false}>
         <View style={styles.modalContainer}>
+          {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>{previewData?.title}</Text>
             <TouchableOpacity onPress={closePreview}>
@@ -73,25 +62,23 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             </TouchableOpacity>
           </View>
 
+          {/* Scrollable content */}
           {previewData && (
-            <FlatList
-              data={previewData.imageAssets}
-              keyExtractor={(_, i) => i.toString()}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onMomentumScrollEnd={(e) => {
-                const newIndex = Math.round(e.nativeEvent.contentOffset.x / width);
-                setPageIndex(newIndex);
-              }}
-              renderItem={renderItem}
-            />
-          )}
-
-          {previewData && (
-            <Text style={styles.pageIndicator}>
-              Page {pageIndex + 1} / {previewData.imageAssets.length}
-            </Text>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContent}
+            >
+              {previewData.imageAssets.map((imgSrc, index) => (
+                <View key={index} style={styles.page}>
+                  <Image
+                    source={imgSrc} // ✅ Direct static require()
+                    style={styles.image}
+                    resizeMode="contain" // ✅ Ensures full image fits in screen
+                  />
+                  <Text style={styles.pageNumber}>Page {index + 1}</Text>
+                </View>
+              ))}
+            </ScrollView>
           )}
         </View>
       </Modal>
@@ -102,19 +89,18 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#000', // dark background for PDF-like look
+    paddingTop: 60,
   },
   header: {
     position: 'absolute',
-    top: 40,
+    top: 20,
     left: 0,
     right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    zIndex: 2,
+    zIndex: 10,
   },
   title: {
     color: '#fff',
@@ -125,22 +111,31 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 22,
   },
-  page: {
-    width,
-    height,
-    justifyContent: 'center',
+  scrollContent: {
+    paddingTop: 60,
+    paddingBottom: 80,
     alignItems: 'center',
+    gap: 40, // spacing between pages
+  },
+  page: {
+    width: width * 0.95,
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    borderRadius: 10,
+    paddingVertical: 16,
+    elevation: 3,
   },
   image: {
-    width,
-    height,
+    width: '100%',
+    height: undefined,
+    aspectRatio: 0.707, // approx A4 ratio (8.5x12)
     resizeMode: 'contain',
   },
-  pageIndicator: {
-    position: 'absolute',
-    bottom: 40,
-    alignSelf: 'center',
-    color: '#fff',
-    fontSize: 14,
+  pageNumber: {
+    color: '#bbb',
+    fontSize: 12,
+    marginTop: 8,
   },
 });
+
+export default PdfViewerProvider;
