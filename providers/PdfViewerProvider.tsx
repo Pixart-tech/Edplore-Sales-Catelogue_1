@@ -3,9 +3,11 @@ import React, {
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   Modal,
@@ -21,6 +23,7 @@ import type {
   ImageURISource,
   ViewToken,
 } from 'react-native';
+import { Asset } from 'expo-asset';
 import type { PreviewImageSource } from '../types';
 
 type PreviewOpenParams = {
@@ -35,57 +38,140 @@ type PdfViewerContextValue = {
 
 const PdfViewerContext = createContext<PdfViewerContextValue | undefined>(undefined);
 
-type NormalizedImageSource = ImageSourcePropType;
+type NormalizedImageSource = {
+  key: string;
+  source: ImageSourcePropType;
+};
 
 interface PreviewState {
   visible: boolean;
   title: string;
   imageAssets: NormalizedImageSource[];
+  loading: boolean;
 }
 
 const initialState: PreviewState = {
   visible: false,
   title: '',
   imageAssets: [],
+  loading: false,
 };
 
-const normalizeImageSource = (
+type CandidateImageSource = ImageURISource & {
+  default?: PreviewImageSource;
+  localUri?: string;
+  __packager_asset?: boolean;
+};
+
+const assetCache = new Map<string, NormalizedImageSource>();
+
+const createNormalizedImage = (
+  key: string,
+  source: ImageSourcePropType,
+): NormalizedImageSource => ({
+  key,
+  source,
+});
+
+const resolveAssetModule = async (
+  moduleLike: number | CandidateImageSource,
+  key: string,
+  fallback: ImageSourcePropType,
+): Promise<NormalizedImageSource> => {
+  const cached = assetCache.get(key);
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    let asset: Asset | null = null;
+    if (typeof moduleLike === 'number') {
+      asset = Asset.fromModule(moduleLike);
+    } else if (moduleLike && typeof moduleLike.uri === 'string') {
+      asset = Asset.fromURI(moduleLike.uri);
+    }
+
+    if (asset) {
+      if ((!asset.localUri || !asset.downloaded) && typeof asset.downloadAsync === 'function') {
+        await asset.downloadAsync();
+      }
+      const resolvedUri = asset.localUri ?? asset.uri;
+      if (resolvedUri) {
+        const normalized = createNormalizedImage(key, { uri: resolvedUri });
+        assetCache.set(key, normalized);
+        return normalized;
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ Failed to resolve asset locally for preview:', error);
+  }
+
+  const normalized = createNormalizedImage(key, fallback);
+  assetCache.set(key, normalized);
+  return normalized;
+};
+
+const normalizeImageSource = async (
   source: PreviewImageSource,
-): NormalizedImageSource[] => {
+): Promise<NormalizedImageSource[]> => {
   if (!source) {
     return [];
   }
 
   if (Array.isArray(source)) {
-    return source.flatMap((item) => normalizeImageSource(item));
+    const nested = await Promise.all(source.map((item) => normalizeImageSource(item)));
+    return nested.flat();
   }
 
   if (typeof source === 'number') {
-    const resolved = Image.resolveAssetSource(source);
-    return resolved?.uri ? [resolved] : [];
+    return [await resolveAssetModule(source, `module-${source}`, source)];
   }
 
   if (typeof source === 'string') {
-    return source ? [{ uri: source }] : [];
+    if (!source) {
+      return [];
+    }
+    const key = `uri-${source}`;
+    const cached = assetCache.get(key);
+    if (cached) {
+      return [cached];
+    }
+    const normalized = createNormalizedImage(key, { uri: source });
+    assetCache.set(key, normalized);
+    return [normalized];
   }
 
   if (typeof source === 'object') {
-    const candidate = source as ImageURISource & {
-      default?: PreviewImageSource;
-      localUri?: string;
-      uri?: string;
-    };
-
-    if (typeof candidate.localUri === 'string') {
-      return [{ uri: candidate.localUri }];
-    }
-
-    if (typeof candidate.uri === 'string') {
-      return [candidate as ImageURISource];
-    }
+    const candidate = source as CandidateImageSource;
 
     if (candidate.default) {
       return normalizeImageSource(candidate.default);
+    }
+
+    if (typeof candidate.localUri === 'string' && candidate.localUri) {
+      const key = `local-${candidate.localUri}`;
+      const cached = assetCache.get(key);
+      if (cached) {
+        return [cached];
+      }
+      const normalized = createNormalizedImage(key, { uri: candidate.localUri });
+      assetCache.set(key, normalized);
+      return [normalized];
+    }
+
+    if (typeof candidate.uri === 'string' && candidate.uri) {
+      const key = `uri-${candidate.uri}`;
+      if (candidate.__packager_asset) {
+        return [await resolveAssetModule(candidate, key, candidate)];
+      }
+
+      const cached = assetCache.get(key);
+      if (cached) {
+        return [cached];
+      }
+      const normalized = createNormalizedImage(key, candidate as ImageURISource);
+      assetCache.set(key, normalized);
+      return [normalized];
     }
   }
 
@@ -96,9 +182,11 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [state, setState] = useState<PreviewState>(initialState);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const previewRequestIdRef = useRef(0);
 
   const closePreview = useCallback(() => {
     console.log('🔴 CLOSE: Closing preview');
+    previewRequestIdRef.current += 1;
     setState(initialState);
     setCurrentImageIndex(0);
   }, []);
@@ -113,25 +201,66 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
-    const normalizedImages = imageAssets.flatMap((asset) => normalizeImageSource(asset));
-    console.log('📦 Normalized Images Count:', normalizedImages.length);
-    if (normalizedImages.length > 0) {
-      console.log('🖼️ Sample normalized image source:', normalizedImages[0]);
-    }
+    const requestId = previewRequestIdRef.current + 1;
+    previewRequestIdRef.current = requestId;
 
-    if (!normalizedImages.length) {
-      console.warn('⚠️ No valid image assets available for preview.');
-      return;
-    }
-
+    setCurrentImageIndex(0);
     setState({
       visible: true,
       title: title ?? 'Preview',
-      imageAssets: normalizedImages,
+      imageAssets: [],
+      loading: true,
     });
-    setCurrentImageIndex(0);
 
-    console.log('✅ Preview state updated successfully');
+    const loadAssets = async () => {
+      try {
+        const normalizedGroups = await Promise.all(
+          imageAssets.map((asset) => normalizeImageSource(asset)),
+        );
+        const normalizedImages = normalizedGroups.flat();
+        console.log('📦 Normalized Images Count:', normalizedImages.length);
+        if (normalizedImages.length > 0) {
+          console.log('🖼️ Sample normalized image source:', normalizedImages[0].source);
+        }
+
+        if (requestId !== previewRequestIdRef.current) {
+          console.log('⏭️ Preview request superseded, skipping state update.');
+          return;
+        }
+
+        if (!normalizedImages.length) {
+          console.warn('⚠️ No valid image assets available for preview.');
+          setState({
+            visible: true,
+            title: title ?? 'Preview',
+            imageAssets: [],
+            loading: false,
+          });
+          return;
+        }
+
+        setState({
+          visible: true,
+          title: title ?? 'Preview',
+          imageAssets: normalizedImages,
+          loading: false,
+        });
+
+        console.log('✅ Preview state updated successfully');
+      } catch (error) {
+        console.error('❌ Failed to load preview assets:', error);
+        if (requestId === previewRequestIdRef.current) {
+          setState({
+            visible: true,
+            title: title ?? 'Preview',
+            imageAssets: [],
+            loading: false,
+          });
+        }
+      }
+    };
+
+    loadAssets();
   }, []);
 
   const contextValue = useMemo(
@@ -166,6 +295,15 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return null;
     }
 
+    if (state.loading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#cbd5f5" />
+          <Text style={styles.loadingText}>Loading preview…</Text>
+        </View>
+      );
+    }
+
     if (!state.imageAssets.length) {
       return (
         <View style={styles.emptyContainer}>
@@ -182,11 +320,11 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            keyExtractor={(_, index) => index.toString()}
+            keyExtractor={(item) => item.key}
             renderItem={({ item, index }) => (
-              <View style={[styles.imageSlide, { width: sliderWidth }]}>
+              <View style={[styles.imageSlide, { width: sliderWidth }]}> 
                 <Image
-                  source={item}
+                  source={item.source}
                   style={[styles.image, { width: sliderWidth - 32, height: sliderHeight }]}
                   resizeMode="contain"
                   onLoadStart={() => console.log(`📥 Image ${index + 1} loading...`)}
@@ -202,11 +340,13 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             scrollEnabled={true}
           />
         </View>
-        <View style={styles.pagination}>
-          <Text style={styles.paginationText}>
-            Page {currentImageIndex + 1} of {state.imageAssets.length}
-          </Text>
-        </View>
+        {state.imageAssets.length > 0 ? (
+          <View style={styles.pagination}>
+            <Text style={styles.paginationText}>
+              Page {currentImageIndex + 1} of {state.imageAssets.length}
+            </Text>
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -269,4 +409,12 @@ const styles = StyleSheet.create({
   paginationText: { color: '#e2e8f0', fontSize: 13, fontWeight: '600' },
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
   emptyText: { textAlign: 'center', color: '#94a3b8', fontSize: 15, fontWeight: '600' },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    paddingHorizontal: 24,
+  },
+  loadingText: { color: '#cbd5f5', fontSize: 14, fontWeight: '600' },
 });
