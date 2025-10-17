@@ -10,18 +10,20 @@ interface PGContentProps {
 }
 
 const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
-  const { openPdf } = usePdfViewer();
+  const { openPreview } = usePdfViewer();
 
-  const handleOpenPdf = useCallback(
+  const handleOpenPreview = useCallback(
     (book: Book) => {
-      openPdf({
-        pdfUrl: book.pdfUrl,
-        pdfAsset: book.pdfAsset,
+      if (!book.imageAssets || book.imageAssets.length === 0) {
+        return;
+      }
+
+      openPreview({
         imageAssets: book.imageAssets,
         title: book.name,
       });
     },
-    [openPdf]
+    [openPreview]
   );
 
   return (
@@ -30,9 +32,7 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
         {subjects.map((subject) => {
           const { Icon, backgroundColor, iconColor } = getSubjectAppearance(subject.name);
           const book = subject.books[0];
-          const hasPreview = Boolean(
-            book?.imageAssets?.length || book?.pdfUrl || book?.pdfAsset
-          );
+          const hasPreview = Boolean(book?.imageAssets?.length);
 
           return (
             <View
@@ -51,14 +51,17 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
                   {/* ✅ Directly render image previews here */}
                   {book?.imageAssets?.length ? (
                     <View style={styles.imageGrid}>
-                      {book.imageAssets.map((img, idx) => (
-                        <Image
-                          key={idx}
-                          source={img}
-                          style={styles.previewImage}
-                          resizeMode="cover"
-                        />
-                      ))}
+                      {book.imageAssets.map((img, idx) => {
+                        const source = typeof img === 'string' ? { uri: img } : img;
+                        return (
+                          <Image
+                            key={idx}
+                            source={source}
+                            style={styles.previewImage}
+                            resizeMode="cover"
+                          />
+                        );
+                      })}
                     </View>
                   ) : null}
                 </View>
@@ -66,7 +69,7 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
 
               {hasPreview ? (
                 <Pressable
-                  onPress={() => handleOpenPdf(book)}
+                  onPress={() => handleOpenPreview(book)}
                   style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
                   accessibilityRole="link"
                   accessibilityLabel={`View preview for ${subject.name}`}
@@ -75,7 +78,7 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
                   <Text style={styles.buttonLabel}>View</Text>
                 </Pressable>
               ) : (
-                <Text style={styles.pdfUnavailable}>Preview unavailable</Text>
+                <Text style={styles.previewUnavailable}>Preview unavailable</Text>
               )}
             </View>
           );
@@ -160,7 +163,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textTransform: 'uppercase',
   },
-  pdfUnavailable: {
+  previewUnavailable: {
     fontSize: 11,
     fontWeight: '600',
     color: '#94a3b8',

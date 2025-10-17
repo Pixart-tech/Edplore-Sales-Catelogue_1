@@ -10,7 +10,7 @@ interface PreWrittenContentProps {
 }
 
 const PreWrittenContent: React.FC<PreWrittenContentProps> = ({ data }) => {
-  const { openPdf } = usePdfViewer();
+  const { openPreview } = usePdfViewer();
 
   return (
     <View style={styles.container}>
@@ -28,8 +28,14 @@ const PreWrittenContent: React.FC<PreWrittenContentProps> = ({ data }) => {
               const book = subject.books[0];
               const { Icon, backgroundColor, iconColor } = getSubjectAppearance(subject.subjectName);
 
+              const hasPreview = Boolean(book.imageAssets && book.imageAssets.length > 0);
+
               const handleOpen = () => {
-                openPdf({ pdfUrl: book.pdfUrl, title: book.name });
+                if (!book.imageAssets || book.imageAssets.length === 0) {
+                  return;
+                }
+
+                openPreview({ imageAssets: book.imageAssets, title: book.name });
               };
 
               return (
@@ -40,15 +46,22 @@ const PreWrittenContent: React.FC<PreWrittenContentProps> = ({ data }) => {
                     </View>
                     <Text style={styles.subjectName}>{subject.subjectName}</Text>
                   </View>
-                  <Pressable
-                    onPress={handleOpen}
-                    style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-                    accessibilityRole="link"
-                    accessibilityLabel={`View PDF for ${subject.subjectName}`}
-                  >
-                    <EyeIcon size={18} color="#ffffff" />
-                    <Text style={styles.buttonLabel}>View</Text>
-                  </Pressable>
+                  {hasPreview ? (
+                    <Pressable
+                      onPress={handleOpen}
+                      style={({ pressed }) => [
+                        styles.button,
+                        pressed && styles.buttonPressed,
+                      ]}
+                      accessibilityRole="link"
+                      accessibilityLabel={`View preview for ${subject.subjectName}`}
+                    >
+                      <EyeIcon size={18} color="#ffffff" />
+                      <Text style={styles.buttonLabel}>View</Text>
+                    </Pressable>
+                  ) : (
+                    <Text style={styles.previewUnavailable}>Preview unavailable</Text>
+                  )}
                 </View>
               );
             })}
@@ -134,6 +147,12 @@ const styles = StyleSheet.create({
   },
   buttonLabel: {
     color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  previewUnavailable: {
+    color: '#94a3b8',
     fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
