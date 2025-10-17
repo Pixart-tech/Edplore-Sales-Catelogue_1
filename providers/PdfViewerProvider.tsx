@@ -16,7 +16,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import type { ViewToken } from 'react-native';
+import type { ImageURISource, ViewToken } from 'react-native';
 import type { PreviewImageSource } from '../types';
 
 type PreviewOpenParams = {
@@ -31,16 +31,51 @@ type PdfViewerContextValue = {
 
 const PdfViewerContext = createContext<PdfViewerContextValue | undefined>(undefined);
 
+type NormalizedImageSource = number | ImageURISource;
+
 interface PreviewState {
   visible: boolean;
   title: string;
-  imageAssets: string[];
+  imageAssets: NormalizedImageSource[];
 }
 
 const initialState: PreviewState = {
   visible: false,
   title: '',
   imageAssets: [],
+};
+
+const normalizeImageSource = (
+  source: PreviewImageSource,
+): NormalizedImageSource[] => {
+  if (!source) {
+    return [];
+  }
+
+  if (Array.isArray(source)) {
+    return source.flatMap((item) => normalizeImageSource(item));
+  }
+
+  if (typeof source === 'number') {
+    return [source];
+  }
+
+  if (typeof source === 'string') {
+    return source ? [{ uri: source }] : [];
+  }
+
+  if (typeof source === 'object') {
+    if ('uri' in source && source.uri) {
+      return [source as ImageURISource];
+    }
+
+    if ('default' in (source as Record<string, unknown>)) {
+      const defaultSource = (source as { default: PreviewImageSource }).default;
+      return defaultSource ? normalizeImageSource(defaultSource) : [];
+    }
+  }
+
+  return [];
 };
 
 export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -64,13 +99,18 @@ export const PdfViewerProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
-    const normalizedImages = Array.from(imageAssets);
+    const normalizedImages = imageAssets.flatMap((asset) => normalizeImageSource(asset));
     console.log('📦 Normalized Images Count:', normalizedImages.length);
+
+    if (!normalizedImages.length) {
+      console.warn('⚠️ No valid image assets available for preview.');
+      return;
+    }
 
     setState({
       visible: true,
       title: title ?? 'Preview',
-      imageAssets: normalizedImages as string[],
+      imageAssets: normalizedImages,
     });
     setCurrentImageIndex(0);
 
