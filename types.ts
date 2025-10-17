@@ -1,6 +1,6 @@
 import type { ImageSourcePropType } from 'react-native';
 
-export type PreviewImageSource = ImageSourcePropType | string;
+export type PreviewImageSource = ImageSourcePropType;
 
 export interface Book {
   name: string;
