@@ -6,7 +6,7 @@ import {
   PG_MATHS_IMAGES,
   PG_PATTERN_IMAGES,
   PG_RHYMES_AND_STORIES_IMAGES,
-} from './assets/PG_image';
+} from './assets';
 
 export const CURRICULUM_DATA: Curriculum = {
   PG: [
