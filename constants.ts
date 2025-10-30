@@ -1,11 +1,17 @@
 import type { Curriculum, PreWrittenClass } from './types';
 import {
   PG_ART_AND_CRAFT_IMAGES,
+  PG_ART_AND_CRAFT_PDF,
   PG_ENGLISH_IMAGES,
+  PG_ENGLISH_PDF,
   PG_EVS_IMAGES,
+  PG_EVS_PDF,
   PG_MATHS_IMAGES,
+  PG_MATHS_PDF,
   PG_PATTERN_IMAGES,
+  PG_PATTERN_PDF,
   PG_RHYMES_AND_STORIES_IMAGES,
+  PG_RHYMES_AND_STORIES_PDF,
   NUR_1_20,
   NUR_1_20_WORKBOOK,
   NUR_21_50,
@@ -63,6 +69,7 @@ export const CURRICULUM_DATA: Curriculum = {
         {
           name: 'Pre-writing Strokes',
           imageAssets: PG_ENGLISH_IMAGES,
+          pdfAsset: PG_ENGLISH_PDF,
         },
       ],
     },
@@ -72,6 +79,7 @@ export const CURRICULUM_DATA: Curriculum = {
         {
           name: 'Pre-math Concepts',
           imageAssets: PG_MATHS_IMAGES,
+          pdfAsset: PG_MATHS_PDF,
         },
       ],
     },
@@ -81,6 +89,7 @@ export const CURRICULUM_DATA: Curriculum = {
         {
           name: 'Myself & My Surroundings',
           imageAssets: PG_EVS_IMAGES,
+          pdfAsset: PG_EVS_PDF,
         },
       ],
     },
@@ -90,6 +99,7 @@ export const CURRICULUM_DATA: Curriculum = {
         {
           name: 'Colouring & Craft Activities',
           imageAssets: PG_ART_AND_CRAFT_IMAGES,
+          pdfAsset: PG_ART_AND_CRAFT_PDF,
         },
       ],
     },
@@ -99,6 +109,7 @@ export const CURRICULUM_DATA: Curriculum = {
         {
           name: 'Pattern Writing Book',
           imageAssets: PG_PATTERN_IMAGES,
+          pdfAsset: PG_PATTERN_PDF,
         },
       ],
     },
@@ -108,6 +119,7 @@ export const CURRICULUM_DATA: Curriculum = {
         {
           name: 'Collection of Rhymes & Stories',
           imageAssets: PG_RHYMES_AND_STORIES_IMAGES,
+          pdfAsset: PG_RHYMES_AND_STORIES_PDF,
         },
       ],
     },

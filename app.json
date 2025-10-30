@@ -11,8 +11,9 @@
       "web"
     ],
     "assetBundlePatterns": [
-      "**/*"
-    ],
+    "**/*",
+    "assets/pdfjs/*"
+   ],
     "web": {
       "bundler": "metro",
       "output": "static"
