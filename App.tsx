@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { CURRICULUM_DATA, PRE_WRITTEN_DATA } from './constants';
+import { CURRICULUM_DATA, PRE_WRITTEN_DATA, QUICK_ACCESS_SECTIONS } from './constants';
 import type { ClassName, RegularClassName } from './types';
 import ClassTabs from './components/ClassTabs';
 import SubjectAccordion from './components/SubjectAccordion';
@@ -10,6 +10,7 @@ import PreWrittenContent from './components/PreWrittenContent';
 import PGContent from './components/PGContent';
 import { BookOpenIcon } from './components/icons/BookOpenIcon';
 import { PdfViewerProvider } from './providers/PdfViewerProvider';
+import QuickAccessTabs, { QuickAccessSectionContent } from './components/QuickAccess';
 
 const App: React.FC = () => {
   const classNames: ClassName[] = useMemo(
@@ -17,6 +18,19 @@ const App: React.FC = () => {
     [],
   );
   const [activeClass, setActiveClass] = useState<ClassName>(classNames[0]);
+  const quickSectionTitles = useMemo(
+    () => QUICK_ACCESS_SECTIONS.map((section) => section.title),
+    []
+  );
+  const [activeTab, setActiveTab] = useState<string>(classNames[0]);
+  const isQuickTabActive = quickSectionTitles.includes(activeTab);
+  const activeQuickSection = useMemo(
+    () =>
+      isQuickTabActive
+        ? QUICK_ACCESS_SECTIONS.find((section) => section.title === activeTab)
+        : undefined,
+    [activeTab, isQuickTabActive]
+  );
   const [openSubjectIndex, setOpenSubjectIndex] = useState<number | null>(null);
 
   const handleToggle = (index: number) => {
@@ -62,9 +76,18 @@ const App: React.FC = () => {
               </View>
               <ClassTabs
                 classes={classNames}
-                activeClass={activeClass}
+                activeClass={isQuickTabActive ? null : activeClass}
                 setActiveClass={(className) => {
                   setActiveClass(className);
+                  setActiveTab(className);
+                  setOpenSubjectIndex(null);
+                }}
+              />
+              <QuickAccessTabs
+                sections={QUICK_ACCESS_SECTIONS}
+                activeTitle={isQuickTabActive ? activeTab : null}
+                onChange={(title) => {
+                  setActiveTab(title);
                   setOpenSubjectIndex(null);
                 }}
               />
@@ -74,7 +97,11 @@ const App: React.FC = () => {
               contentContainerStyle={styles.content}
               showsVerticalScrollIndicator={false}
             >
-              {renderContent()}
+              {isQuickTabActive && activeQuickSection ? (
+                <QuickAccessSectionContent section={activeQuickSection} />
+              ) : (
+                renderContent()
+              )}
             </ScrollView>
 
             <Text style={styles.footer}>Curriculum data for educational purposes.</Text>
@@ -98,7 +125,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   header: {
-    gap: 16,
+    gap: 12,
   },
   titleRow: {
     flexDirection: 'row',

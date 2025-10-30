@@ -1,4 +1,4 @@
-import type { Curriculum, PreWrittenClass } from './types';
+import type { Curriculum, PreWrittenClass, QuickAccessSection } from './types';
 import {
   PG_ART_AND_CRAFT_IMAGES,
   PG_ART_AND_CRAFT_PDF,
@@ -256,20 +256,20 @@ export const CURRICULUM_DATA: Curriculum = {
     },
     {
       name: 'Kannada',
-      core: [{ name: 'Swara V1', imageAssets: LKG_KANNADA }],
-      variations: [{ name: 'Swara V2', imageAssets: LKG_KANNADA_SWARA_V2 }],
+      core: [{ name: 'Swara', imageAssets: LKG_KANNADA }],
+      variations: [],
       addOns: [],
     },
     {
       name: 'Hindi',
-      core: [{ name: 'Swara V1', imageAssets: LKG_HINDI }],
-      variations: [{ name: 'Swara V2', imageAssets: LKG_HINDI_SWARA_V2 }],
+      core: [{ name: 'Swara', imageAssets: LKG_HINDI }],
+      variations: [],
       addOns: [],
     },
     {
       name: 'Tamil',
-      core: [{ name: 'Swara V1', imageAssets: LKG_TAMIL }],
-      variations: [{ name: 'Swara V2', imageAssets: LKG_TAMIL_SWARA_V2 }],
+      core: [{ name: 'Swara', imageAssets: LKG_TAMIL }],
+      variations: [],
       addOns: [],
     },
   ],
@@ -363,37 +363,31 @@ export const CURRICULUM_DATA: Curriculum = {
     {
       name: 'Kannada',
       core: [
-        { name: 'Swara & vyanjana V1', imageAssets: UKG_KANNADA_SWARA_AND_VYANJANA_V1 },
+        { name: 'Swara & vyanjana', imageAssets: UKG_KANNADA_SWARA_AND_VYANJANA_V1 },
       ],
-      variations: [
-        { name: 'Swara & vyanjana V2', imageAssets: UKG_KANNADA_SWARA_AND_VYANJANA_V2 },
-      ],
+      variations: [],
       addOns: [],
     },
     {
       name: 'Hindi',
       core: [
-        { name: 'Swara & vyanjana V1', imageAssets: UKG_HINDI_SWARA_AND_VYANJANA_V1 },
+        { name: 'Swara & vyanjana', imageAssets: UKG_HINDI_SWARA_AND_VYANJANA_V1 },
       ],
-      variations: [
-        { name: 'Swara & vyanjana V2', imageAssets: UKG_HINDI_SWARA_AND_VYANJANA_V2 },
-      ],
+      variations: [],
       addOns: [],
     },
     {
       name: 'Tamil',
       core: [
-        { name: 'Swara & vyanjana V1', imageAssets: UKG_TAMIL_SWARA_AND_VYANJANA_V1 },
+        { name: 'Swara & vyanjana', imageAssets: UKG_TAMIL_SWARA_AND_VYANJANA_V1 },
       ],
-      variations: [
-        { name: 'Swara & vyanjana V2', imageAssets: UKG_TAMIL_SWARA_AND_VYANJANA_V2 },
-      ],
+      variations: [],
       addOns: [],
     },
     {
       name: 'Telugu',
-      core: [{ name: 'Swara & vyanjana V1' }],
-      variations: [{ name: 'Swara & vyanjana V2' }],
+      core: [{ name: 'Swara & vyanjana' }],
+      variations: [],
       addOns: [],
     },
   ],
@@ -422,4 +416,61 @@ export const PRE_WRITTEN_DATA: PreWrittenClass[] = [
             { subjectName: 'EVS', books: [{ name: 'EVS Pre-Written Book' }] },
         ],
     },
+];
+
+export const QUICK_ACCESS_SECTIONS: QuickAccessSection[] = [
+  {
+    title: 'Cover pages',
+    items: [
+      {
+        buttonLabel: 'View',
+        previewTitle: 'Cover Pages',
+      },
+    ],
+  },
+  {
+    title: 'Stickers',
+    items: [
+      {
+        title: 'Nursery',
+        buttonLabel: 'View',
+        previewTitle: 'Stickers - Nursery',
+      },
+      {
+        title: 'LKG',
+        buttonLabel: 'View',
+        previewTitle: 'Stickers - LKG',
+      },
+      {
+        title: 'UKG',
+        buttonLabel: 'View',
+        previewTitle: 'Stickers - UKG',
+      },
+    ],
+  },
+  {
+    title: 'Add ons',
+    items: [
+      {
+        title: 'ID cards',
+        buttonLabel: 'View',
+        previewTitle: 'Add ons - ID cards',
+      },
+      {
+        title: 'Report cards',
+        buttonLabel: 'View',
+        previewTitle: 'Add ons - Report cards',
+      },
+      {
+        title: 'Certificate',
+        buttonLabel: 'View',
+        previewTitle: 'Add ons - Certificate',
+      },
+      {
+        title: 'Lanyards',
+        buttonLabel: 'View',
+        previewTitle: 'Add ons - Lanyards',
+      },
+    ],
+  },
 ];

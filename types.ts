@@ -46,3 +46,16 @@ export interface PreWrittenClass {
     className: 'Nursery' | 'LKG' | 'UKG';
     subjects: PreWrittenSubject[];
 }
+
+export interface QuickAccessItem {
+  title?: string;
+  buttonLabel?: string;
+  previewTitle: string;
+  imageAssets?: readonly PreviewImageSource[];
+  pdfAsset?: PreviewPdfSource;
+}
+
+export interface QuickAccessSection {
+  title: string;
+  items: QuickAccessItem[];
+}
