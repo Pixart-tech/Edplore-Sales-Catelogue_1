@@ -196,17 +196,14 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     backgroundColor: '#000',
-    paddingTop: 60,
+    paddingTop: 24,
   },
   header: {
-    position: 'absolute',
-    top: 20,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    zIndex: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
   title: {
     color: '#fff',
@@ -220,7 +217,7 @@ const styles = StyleSheet.create({
   },
   pdfWrapper: {
     flex: 1,
-    paddingTop: 60,
+    marginTop: 12,
   },
   webView: {
     flex: 1,
@@ -241,7 +238,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   scrollContent: {
-    paddingTop: 60,
+    paddingTop: 16,
     paddingBottom: 80,
     alignItems: 'center',
   },
