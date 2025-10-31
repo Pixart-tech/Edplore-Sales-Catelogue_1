@@ -10,19 +10,29 @@ interface BookItemProps {
 
 const BookItem: React.FC<BookItemProps> = ({ book }) => {
   const { openPreview } = usePdfViewer();
-
-  const hasPreview = Boolean(book.imageAssets && book.imageAssets.length > 0);
+  const hasPreview = Boolean(book.pdfAsset || (book.imageAssets && book.imageAssets.length > 0));
 
   const handleOpen = useCallback(() => {
-    if (!book.imageAssets || book.imageAssets.length === 0) {
+    if (book.pdfAsset) {
+      openPreview({
+        pdfAsset: book.pdfAsset,
+        title: book.name,
+      });
+      return;
+    }
+
+    if (book.imageAssets && book.imageAssets.length > 0) {
+      openPreview({
+        imageAssets: book.imageAssets,
+        title: book.name,
+      });
       return;
     }
 
     openPreview({
-      imageAssets: book.imageAssets,
       title: book.name,
     });
-  }, [book.imageAssets, book.name, openPreview]);
+  }, [book.imageAssets, book.name, book.pdfAsset, openPreview]);
 
   return (
     <View style={styles.container}>
@@ -84,7 +94,7 @@ const styles = StyleSheet.create({
   },
   previewUnavailable: {
     color: '#94a3b8',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     textTransform: 'uppercase',
   },

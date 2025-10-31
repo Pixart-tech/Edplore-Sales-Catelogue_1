@@ -4,7 +4,7 @@ import type { ClassName } from '../types';
 
 interface ClassTabsProps {
   classes: ClassName[];
-  activeClass: ClassName;
+  activeClass: ClassName | null;
   setActiveClass: (className: ClassName) => void;
 }
 

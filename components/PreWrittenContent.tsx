@@ -28,14 +28,17 @@ const PreWrittenContent: React.FC<PreWrittenContentProps> = ({ data }) => {
               const book = subject.books[0];
               const { Icon, backgroundColor, iconColor } = getSubjectAppearance(subject.subjectName);
 
-              const hasPreview = Boolean(book.imageAssets && book.imageAssets.length > 0);
+              const hasPreview = Boolean(book.pdfAsset || (book.imageAssets && book.imageAssets.length > 0));
 
               const handleOpen = () => {
-                if (!book.imageAssets || book.imageAssets.length === 0) {
+                if (book.pdfAsset) {
+                  openPreview({ pdfAsset: book.pdfAsset, title: book.name });
                   return;
                 }
 
-                openPreview({ imageAssets: book.imageAssets, title: book.name });
+                if (book.imageAssets && book.imageAssets.length > 0) {
+                  openPreview({ imageAssets: book.imageAssets, title: book.name });
+                }
               };
 
               return (

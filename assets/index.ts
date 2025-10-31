@@ -1,68 +1,62 @@
-export {
-  PG_ART_AND_CRAFT_IMAGES,
-  PG_RHYMES_AND_STORIES_IMAGES,
-  PG_PATTERN_IMAGES,
-  PG_EVS_IMAGES,
-  PG_ENGLISH_IMAGES,
-  PG_MATHS_IMAGES,
-  PG_ART_AND_CRAFT_PDF,
-  PG_ENGLISH_PDF,
-  PG_EVS_PDF,
-  PG_MATHS_PDF,
-  PG_PATTERN_PDF,
-  PG_RHYMES_AND_STORIES_PDF,
-} from './PG_image/PG_Mapping';
-export { 
-  NUR_1_20,
-  NUR_1_20_WORKBOOK,
-  NUR_21_50,
-  NUR_ABCD_CAPS,
-  NUR_ABCD_CAPS_WORKBOOK,
-  NUR_ABCD_SMALL,
-  NUR_ABCD_SMAL_WORKBOOK,
-  NUR_ART_AND_CRAFT,
-  NUR_ASSESSMENT,
-  NUR_EVS,
-  NUR_LTI_CAPS,
-  NUR_LTI_CAPS_WORKBOOK,
-  NUR_RHYMES_AND_STORIES,
-  NUR_SATPIN_SMALL
-} from './Nursery_Image/Nur_Mapping';
+// PG PDFs
+export const PG_ENGLISH_PDF = require('./PG/English.pdf') as number;
+export const PG_MATHS_PDF = require('./PG/Maths.pdf') as number;
+export const PG_EVS_PDF = require('./PG/EVS.pdf') as number;
+export const PG_ART_AND_CRAFT_PDF = require('./PG/Art & craft.pdf') as number;
+export const PG_PATTERN_PDF = require('./PG/Pattern.pdf') as number;
+export const PG_RHYMES_AND_STORIES_PDF = require('./PG/Rhymes & Stories.pdf') as number;
 
-export { 
-  LKG_1_50_AND_1_10_NN_TENS_AND_ONES_FORMAT,
-  LKG_1_50_AND_1_10_NN_TENS_AND_ONES_FORMAT_WORKBOOK,
-  LKG_1_50_AND_1_10_NN,
-  LKG_51_100,
-  LKG_ART_AND_CRAFT,
-  LKG_ASSESSMENT,
-  LKG_CAPS_VOWELS,
-  LKG_HINDI,
-  LKG_HINDI_SWARA_V2,
-  LKG_KANNADA,
-  LKG_KANNADA_SWARA_V2,
-  LKG_SMALL_VOWELS,
-  LKG_SMALL_VOWELS_WORKBOOK,
-  LKG_TAMIL,
-  LKG_TAMIL_SWARA_V2
-} from './LKG_Image/LKG_Mapping';
+// Nursery PDFs
+export const NUR_ABCD_CAPS_PDF = require('./Nursery/English Skill book/Core/ABCD caps.pdf') as number;
+export const NUR_ABCD_CAPS_AND_SMALL_PDF = require('./Nursery/English Skill book/Variations/ABCD caps & small.pdf') as number;
+export const NUR_ABCD_SMALL_PDF = require('./Nursery/English Skill book/Variations/ABCD small.pdf') as number;
+export const NUR_SATPIN_SMALL_PDF = require('./Nursery/English Skill book/Variations/SATPIN small.pdf') as number;
+export const NUR_LTI_CAPS_PDF = require('./Nursery/English Skill book/Variations/LTI caps.pdf') as number;
+export const NUR_ABCD_CAPS_WORKBOOK_PDF = require('./Nursery/English Work book/Core/ABCD caps.pdf') as number;
+export const NUR_ABCD_CAPS_AND_SMALL_WORKBOOK_PDF = require('./Nursery/English Work book/Variations/ABCD caps & small.pdf') as number;
+export const NUR_ABCD_SMALL_WORKBOOK_PDF = require('./Nursery/English Work book/Variations/ABCD small.pdf') as number;
+export const NUR_LTI_CAPS_WORKBOOK_PDF = require('./Nursery/English Work book/Variations/LTI caps.pdf') as number;
+export const NUR_SATPIN_SMALL_WORKBOOK_PDF = require('./Nursery/English Work book/Variations/SATPIN small.pdf') as number;
+export const NUR_MATHS_1_20_PDF = require('./Nursery/Maths skill book/Core/1-20.pdf') as number;
+export const NUR_MATHS_21_50_PDF = require('./Nursery/Maths skill book/Add on/21 - 50.pdf') as number;
+export const NUR_MATHS_WORKBOOK_1_20_PDF = require('./Nursery/Maths work book/Core/1-20.pdf') as number;
+export const NUR_EVS_PDF = require('./Nursery/EVS.pdf') as number;
+export const NUR_ASSESSMENT_PDF = require('./Nursery/Assessment.pdf') as number;
+export const NUR_RHYMES_AND_STORIES_PDF = require('./Nursery/Rhymes and stories.pdf') as number;
+export const NUR_ART_AND_CRAFT_PDF = require('./Nursery/Art and craft.pdf') as number;
 
-export { 
-  UKG_101_200, 
-  UKG_101_500, 
-  UKG_1_100_AND_1_100_NUMBER_NAMES, 
-  UKG_1_100_AND_1_100_NUMBER_NAMES_WORKBOOK, 
-  UKG_1_100_NN_TENS_AND_ONES_FORMAT, 
-  UKG_1_100_NN_TENS_AND_ONES_FORMAT_WORKBOOK, 
-  UKG_ASSESSMENT, 
-  UKG_EVS, 
-  UKG_HINDI_SWARA_AND_VYANJANA_V1, 
-  UKG_HINDI_SWARA_AND_VYANJANA_V2, 
-  UKG_KANNADA_SWARA_AND_VYANJANA_V1, 
-  UKG_KANNADA_SWARA_AND_VYANJANA_V2, 
-  UKG_RHYMES_AND_STORIES, 
-  UKG_TAMIL_SWARA_AND_VYANJANA_V1, 
-  UKG_TAMIL_SWARA_AND_VYANJANA_V2, 
-  UKG_WITHOUT_CURSIVE_LONG_VOWELS_BLENDS_DIAPHRAMS_SIMPLE_SENTENCES, 
-  UKG_WITHOUT_CURSIVE_LONG_VOWELS_BLENDS_DIAPHRAMS_SIMPLE_SENTENCES_WORKBOOK
-} from './UKG_Image/UKG_Mapping';
+// LKG PDFs
+export const LKG_SMALL_VOWELS_PDF = require('./LKG/English skill book/Core/Small & vowels.pdf') as number;
+export const LKG_SMALL_VOWELS_WORKBOOK_PDF = require('./LKG/English work book/Core/Small & vowels.pdf') as number;
+export const LKG_MATHS_1_50_AND_1_10_NN_PDF = require('./LKG/Maths skill book/Core/1-50 & 1-10 NN.pdf') as number;
+export const LKG_MATHS_51_100_PDF = require('./LKG/Maths skill book/add on/51-100.pdf') as number;
+export const LKG_MATHS_WORKBOOK_1_50_AND_1_10_NN_PDF = require('./LKG/Maths work book/Core/1-50 & 1-10 NN.pdf') as number;
+export const LKG_EVS_PDF = require('./LKG/EVS.pdf') as number;
+export const LKG_ASSESSMENT_PDF = require('./LKG/Assessment.pdf') as number;
+export const LKG_RHYMES_AND_STORIES_PDF = require('./LKG/Rhymes and stories.pdf') as number;
+export const LKG_ART_AND_CRAFT_PDF = require('./LKG/Art & Craft.pdf') as number;
+export const LKG_KANNADA_PDF = require('./LKG/Kannada.pdf') as number;
+export const LKG_HINDI_PDF = require('./LKG/Hindi.pdf') as number;
+export const LKG_TAMIL_PDF = require('./LKG/Tamil.pdf') as number;
+export const LKG_TELUGU_PDF = require('./LKG/Telugu.pdf') as number;
+
+// UKG PDFs
+export const UKG_ENGLISH_SKILL_PDF = require('./UKG/English Skill book/Core/without cursive + long vowels + blends + diagraphs + simple sentences.pdf') as number;
+export const UKG_ENGLISH_WORKBOOK_PDF = require('./UKG/English Skill book/Core/without cursive + long vowels + blends + diagraphs + simple sentences.pdf') as number;
+export const UKG_1_100_AND_1_100_NUMBER_NAMES_PDF = require('./UKG/Maths skill book/Core/1-100 & 1-100 NN.pdf') as number;
+export const UKG_1_100_AND_1_100_NUMBER_NAMES_WORKBOOK_PDF = require('./UKG/Maths work book/Core/1-100 & 1-100 NN.pdf') as number;
+export const UKG_101_200_PDF = require('./UKG/Maths skill book/Add on/101-200.pdf') as number;
+export const UKG_101_500_PDF = require('./UKG/Maths skill book/Add on/101-500.pdf') as number;
+export const UKG_EVS_PDF = require('./UKG/EVS.pdf') as number;
+export const UKG_ASSESSMENT_PDF = require('./UKG/Assessment.pdf') as number;
+export const UKG_RHYMES_AND_STORIES_PDF = require('./UKG/Rhymes & Stories.pdf') as number;
+export const UKG_ART_AND_CRAFT_PDF = require('./UKG/Art & Craft.pdf') as number;
+export const UKG_KANNADA_PDF = require('./UKG/Kannada.pdf') as number;
+export const UKG_HINDI_PDF = require('./UKG/Hindi.pdf') as number;
+export const UKG_TAMIL_PDF = require('./UKG/Tamil.pdf') as number;
+
+// Add-ons PDFs
+export const ADD_ONS_ID_CARDS_PDF = require('./Add ons/ID cards.pdf') as number;
+export const ADD_ONS_REPORT_CARDS_PDF = require('./Add ons/Report cards.pdf') as number;
+export const ADD_ONS_CERTIFICATE_PDF = require('./Add ons/certificate.pdf') as number;
+export const ADD_ONS_LANYARDS_PDF = require('./Add ons/Lanyard.pdf') as number;

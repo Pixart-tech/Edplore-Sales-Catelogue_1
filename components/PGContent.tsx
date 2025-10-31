@@ -14,14 +14,20 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
 
   const handleOpenPreview = useCallback(
     (book: Book) => {
-      if (!book.imageAssets || book.imageAssets.length === 0) {
+      if (book.pdfAsset) {
+        openPreview({
+          pdfAsset: book.pdfAsset,
+          title: book.name,
+        });
         return;
       }
 
-      openPreview({
-        imageAssets: book.imageAssets,
-        title: book.name,
-      });
+      if (book.imageAssets && book.imageAssets.length > 0) {
+        openPreview({
+          imageAssets: book.imageAssets,
+          title: book.name,
+        });
+      }
     },
     [openPreview]
   );
@@ -32,7 +38,7 @@ const PGContent: React.FC<PGContentProps> = ({ subjects }) => {
         {subjects.map((subject) => {
           const { Icon, backgroundColor, iconColor } = getSubjectAppearance(subject.name);
           const book = subject.books[0];
-          const hasPreview = Boolean(book?.imageAssets?.length);
+          const hasPreview = Boolean(book?.pdfAsset || book?.imageAssets?.length);
 
           return (
             <View
