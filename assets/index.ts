@@ -24,10 +24,13 @@ export const NUR_EVS_PDF = require('./Nursery/EVS.pdf') as number;
 export const NUR_ASSESSMENT_PDF = require('./Nursery/Assessment.pdf') as number;
 export const NUR_RHYMES_AND_STORIES_PDF = require('./Nursery/Rhymes and stories.pdf') as number;
 export const NUR_ART_AND_CRAFT_PDF = require('./Nursery/Art and craft.pdf') as number;
+export const NUR_ENGLISH_WORK_BOOK_PDF = require('./Nursery/English Work book.pdf') as number;
 
 // LKG PDFs
 export const LKG_SMALL_VOWELS_PDF = require('./LKG/English skill book/Core/Small & vowels.pdf') as number;
+export const LKG_CAPS_VOWELS_PDF = require('./LKG/English skill book/Variation/caps + vowels.pdf') as number;
 export const LKG_SMALL_VOWELS_WORKBOOK_PDF = require('./LKG/English work book/Core/Small & vowels.pdf') as number;
+export const LKG_CAPS_VOWELS_WORKBOOK_PDF = require('./LKG/English work book/Variation/Caps + Vowels.pdf') as number;
 export const LKG_MATHS_1_50_AND_1_10_NN_PDF = require('./LKG/Maths skill book/Core/1-50 & 1-10 NN.pdf') as number;
 export const LKG_MATHS_51_100_PDF = require('./LKG/Maths skill book/add on/51-100.pdf') as number;
 export const LKG_MATHS_WORKBOOK_1_50_AND_1_10_NN_PDF = require('./LKG/Maths work book/Core/1-50 & 1-10 NN.pdf') as number;
@@ -42,7 +45,9 @@ export const LKG_TELUGU_PDF = require('./LKG/Telugu.pdf') as number;
 
 // UKG PDFs
 export const UKG_ENGLISH_SKILL_PDF = require('./UKG/English Skill book/Core/without cursive + long vowels + blends + diagraphs + simple sentences.pdf') as number;
+export const UKG_CURSIVE_PDF = require('./UKG/English Skill book/Add on/Cursive.pdf') as number;
 export const UKG_ENGLISH_WORKBOOK_PDF = require('./UKG/English Skill book/Core/without cursive + long vowels + blends + diagraphs + simple sentences.pdf') as number;
+export const UKG_ENGLISH_WORK_BOOK_PDF = require('./UKG/English Work book/Core/English work book.pdf') as number;
 export const UKG_1_100_AND_1_100_NUMBER_NAMES_PDF = require('./UKG/Maths skill book/Core/1-100 & 1-100 NN.pdf') as number;
 export const UKG_1_100_AND_1_100_NUMBER_NAMES_WORKBOOK_PDF = require('./UKG/Maths work book/Core/1-100 & 1-100 NN.pdf') as number;
 export const UKG_101_200_PDF = require('./UKG/Maths skill book/Add on/101-200.pdf') as number;
@@ -60,3 +65,17 @@ export const ADD_ONS_ID_CARDS_PDF = require('./Add ons/ID cards.pdf') as number;
 export const ADD_ONS_REPORT_CARDS_PDF = require('./Add ons/Report cards.pdf') as number;
 export const ADD_ONS_CERTIFICATE_PDF = require('./Add ons/certificate.pdf') as number;
 export const ADD_ONS_LANYARDS_PDF = require('./Add ons/Lanyard.pdf') as number;
+
+// Pre-written PDFs
+export const PRE_WRITTEN_LKG_ENGLISH_PDF = require('./Pre-written/LKG_English.pdf') as number;
+export const PRE_WRITTEN_LKG_MATHS_PDF = require('./Pre-written/LKG_Maths.pdf') as number;
+export const PRE_WRITTEN_NURSERY_ENGLISH_PDF = require('./Pre-written/Nursery_English.pdf') as number;
+export const PRE_WRITTEN_NURSERY_MATHS_PDF = require('./Pre-written/Nursery_Maths.pdf') as number;
+export const PRE_WRITTEN_UKG_ENGLISH_PDF = require('./Pre-written/UKG_English.pdf') as number;
+export const PRE_WRITTEN_UKG_EVS_PDF = require('./Pre-written/UKG_EVS.pdf') as number;
+export const PRE_WRITTEN_UKG_MATHS_PDF = require('./Pre-written/UKG_Maths.pdf') as number;
+
+// Cover pages and Stickers
+export const COVER_PAGES_PDF = require('./Cover pages/Cover pages.pdf') as number;
+export const STICKERS_LKG_PDF = require('./Stickers/LKG.pdf') as number;
+export const STICKERS_NURSERY_PDF = require('./Stickers/Nursery.pdf') as number;
