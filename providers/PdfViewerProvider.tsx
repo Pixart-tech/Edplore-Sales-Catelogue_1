@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Asset } from 'expo-asset';
 import { WebView } from 'react-native-webview';
-import { readAsStringAsync } from 'expo-file-system/legacy';
+import { readAsStringAsync } from 'expo-file-system';
 
 import { preparePdfViewerAssets } from '../utils/pdfViewerAssets';
 

@@ -1,5 +1,5 @@
 import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system/legacy';
+import * as FileSystem from 'expo-file-system';
 
 const CACHE_ROOT = `${FileSystem.cacheDirectory}pdfviewer`;
 
